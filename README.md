@@ -19,13 +19,7 @@ Navigate to a clojurescript file and start a figwheel REPL with `cider-jack-in-c
 Compile css file once.
 
 ```
-lein less once
-```
-
-Automatically recompile css file on change.
-
-```
-lein less auto
+lein npm run postcss
 ```
 
 ### Run application:
