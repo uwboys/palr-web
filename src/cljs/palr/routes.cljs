@@ -19,17 +19,13 @@
   ;; --------------------
   ;; define routes here
   (defroute "/" []
-    (re-frame/dispatch [:set-active-panel :landing]))
+    (re-frame/dispatch [:set-active-panel :palr.views/landing]))
 
   (defroute "/login" []
-    (re-frame/dispatch [:set-active-panel :login]))
+    (re-frame/dispatch [:set-active-panel :palr.views/login]))
 
   (defroute "/register" []
-    (re-frame/dispatch [:set-active-panel :register]))
-
-  (defroute "/about" []
-    (re-frame/dispatch [:set-active-panel :about-panel]))
-
+    (re-frame/dispatch [:set-active-panel :palr.views/register]))
 
   ;; --------------------
   (hook-browser-navigation!))
