@@ -19,7 +19,13 @@
   ;; --------------------
   ;; define routes here
   (defroute "/" []
-    (re-frame/dispatch [:set-active-panel :landing-page]))
+    (re-frame/dispatch [:set-active-panel :landing]))
+
+  (defroute "/login" []
+    (re-frame/dispatch [:set-active-panel :login]))
+
+  (defroute "/register" []
+    (re-frame/dispatch [:set-active-panel :register]))
 
   (defroute "/about" []
     (re-frame/dispatch [:set-active-panel :about-panel]))

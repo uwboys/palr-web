@@ -1,29 +1,49 @@
 (ns palr.views
     (:require [re-frame.core :as re-frame]))
 
+(defn FullScreenXYCenter [child]
+  [:div.flex.items-center.justify-center {:style {:width "100vw" :height "100vh"}}
+   child])
+
+(defn RouterButton [url text]
+  [:button {:type "button"
+            :on-click #(re-frame/dispatch [:change-route url])
+            :class "btn btn-primary mt1"} text])
+
+(defn LeftArrow []
+  [:div {:dangerouslySetInnerHTML {:__html "&larr;"}}])
+
+(defn LoginPage []
+  [FullScreenXYCenter
+   [:div.flex.flex-column {:style {:padding-bottom "15rem" :width "20rem"}}
+    [:input.input.mb1 {:type "email" :placeholder "Username"}]
+    [:input.input.mb1 {:type "password" :placeholder "Password"}]
+    [RouterButton "/login" "Sign In"]
+    [RouterButton "/" [LeftArrow]]]])
+
 (defn LandingPage []
-  [:div {:style {:width "100vw"
-                 :height "100vh"
-                 :display "flex"
-                 :justify-content "center"
-                 :align-items "center"}}
-   [:div {:style {:display "flex" :flex-direction "column"}}
-    [:button {:type "button"} "Login"]
-    [:button {:type "button"} "Register"]]])
+  [FullScreenXYCenter
+   [:div.flex.flex-column {:style {:padding-bottom "15rem" :width "20rem"}}
+    [:h1.center {:style {:font-size "300%"}} "Palr"]
+    [RouterButton "/login" "Login"]
+    [RouterButton "/register" "Register"]]])
 
-;; about
-
-(defn about-panel []
-  (fn []
-    [:div "This horse the About Page."
-     [:div [:a {:href "#/"} "go to Home Page"]]]))
-
+(defn RegisterPage []
+  [FullScreenXYCenter
+   [:div.flex.flex-column {:style {:padding-bottom "15rem" :width "20rem"}}
+    [:input.input.mb1 {:type "text" :placeholder "Username"}]
+    [:input.input.mb1 {:type "email" :placeholder "Email"}]
+    [:input.input.mb1 {:type "password" :placeholder "Password"}]
+    [:input.input.mb1 {:type "text" :placeholder "Location"}]
+    [RouterButton "/register" "Sign up"]
+    [RouterButton "/" [LeftArrow]]]])
 
 ;; main
 
 (defmulti panels identity)
-(defmethod panels :landing-page [] [LandingPage])
-(defmethod panels :about-panel [] [about-panel])
+(defmethod panels :landing [] [LandingPage])
+(defmethod panels :login [] [LoginPage])
+(defmethod panels :register [] [RegisterPage])
 (defmethod panels :default [] [:div])
 
 (defn show-panel

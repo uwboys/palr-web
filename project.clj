@@ -15,7 +15,8 @@
                        [postcss "^5.2.3"]
                        [postcss-cli "^2.6.0"]
                        [postcss-cssnext "^2.8.0"]
-                       [postcss-import "^8.1.2"]]
+                       [postcss-import "^8.1.2"]
+                       [basscss-color-forms "^3.0.2"]]
         :package {:scripts {:postcss "postcss -c postcss.config.json -o resources/public/css/site.css ./styles/index.css"
                             :postcss:watch "npm run postcss -- --watch"}}}
 
