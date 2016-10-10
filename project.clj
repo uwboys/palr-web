@@ -4,7 +4,11 @@
                  [reagent "0.6.0"]
                  [binaryage/devtools "0.8.2"]
                  [re-frame "0.8.0"]
-                 [secretary "1.2.3"]]
+                 [secretary "1.2.3"]
+                 [compojure "1.5.1"]
+                 [ring "1.5.0"]
+                 [ring/ring-json "0.4.0"]
+                 [ring/ring-defaults "0.2.1"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]
             [lein-npm "0.6.2"]]
@@ -27,19 +31,19 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"
                                     "test/js"]
 
-  :figwheel {:css-dirs ["resources/public/css"]}
+  :figwheel {:css-dirs ["resources/public/css"]
+             :ring-handler palr.core/dev-handler}
 
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :profiles
   {:dev
-   {:dependencies [
-                   [figwheel-sidecar "0.5.7"]
+   {:dependencies [[figwheel-sidecar "0.5.7"]
                    [com.cemerick/piggieback "0.2.1"]]
 
     :plugins      [[lein-figwheel "0.5.7"]
                    [lein-doo "0.1.7"]
-                   [cider/cider-nrepl "0.13.0"]]}}
+                   [cider/cider-nrepl "0.14.0-SNAPSHOT"]]}}
 
 
   :cljsbuild
