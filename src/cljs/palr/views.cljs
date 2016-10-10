@@ -7,13 +7,14 @@
 (def ^:const bg-image (str "url(" sakura-bg ")"))
 
 (defn Title []
-  [:h1.center.white {:style {:font-size "300%"}} "Palr"])
+  [:h1.center.white {:style {:font-size "300%"
+                             :color "white"}} "palr"])
 
 (defn BlurredBackground []
-  [:div.fixed.top-0.left-0.bottom-0.right-0 {:style {:background-image bg-image
+  [:div.fixed.top-0.left-0.bottom-0.right-0 {:style {;:background-image bg-image
                                                      :background-size "cover"
                                                      :z-index -1
-                                                     :filter "blur(1px)"}}])
+                                                     :filter "blur(10px)"}}])
 
 (defn Container [& children]
   [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
@@ -59,7 +60,6 @@
 (defmulti panels identity)
 (defmethod panels ::front-page [panel-key]
   [Container
-   [BlurredBackground]
    [Title]
    (condp = panel-key
      ::landing [LandingPage]
