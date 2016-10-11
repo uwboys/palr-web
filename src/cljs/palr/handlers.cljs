@@ -1,7 +1,9 @@
 (ns palr.handlers
   (:require [re-frame.core :as re-frame]
             [palr.db :as db]
-            [secretary.core :as secretary]))
+            [secretary.core :as secretary]
+            [ajax.core :as ajax]
+            [day8.re-frame.http-fx]))
 
 (re-frame/reg-event-db
  :initialize-db
@@ -26,3 +28,13 @@
      (secretary/dispatch! hash)
      (set-hash! hash)
      db)))
+
+(re-frame/reg-event-fx
+ :login
+ (fn [ [_ username password]]
+   {:http-xhrio {:method          :post
+                 :uri             "/login"
+                 :timeout         8000                                           ;; optional see API docs
+                 :response-format (ajax/json-response-format {:keywords? true})  ;; IMPORTANT!: You must provide this.
+                 :on-success      [:login-success]
+                 :on-failure      [:login-failure]}}))
