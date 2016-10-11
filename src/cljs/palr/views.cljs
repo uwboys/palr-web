@@ -1,5 +1,6 @@
 (ns palr.views
-    (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [reagent.core :as reagent]))
 
 (def ^:const sakura-bg "https://66.media.tumblr.com/41281654247d0c1b622467039c2cdb05/tumblr_ncmmky30z11rxgopvo1_500.gif")
 (def ^:const snow-bg "http://i.makeagif.com/media/10-12-2015/rb3ZJZ.gif")
@@ -30,12 +31,23 @@
 (defn LeftArrow []
   [:div {:dangerouslySetInnerHTML {:__html "&larr;"}}])
 
+
+(defn sync [atom attrs]
+  (assoc attrs :value @atom :on-change #(reset! atom (-> % .-target .-value))))
+
 (defn LoginPage []
-  [:div.flex.flex-column
-   [:input.input.mb1 {:type "email" :placeholder "Username"}]
-   [:input.input.mb1 {:type "password" :placeholder "Password"}]
-   [RouterButton "/login" "Sign In"]
-   [RouterButton "/" [LeftArrow]]])
+  (let [username (reagent/atom "")
+        password (reagent/atom "")]
+    (fn []
+      [:form.flex.flex-column {:on-submit #(do
+                                             (re-frame/dispatch [:login @username @password])
+                                             (reset! username "")
+                                             (reset! password "")
+                                             (.preventDefault %))}
+       [:input.input.mb1 (sync username {:type "text" :placeholder "Username"})]
+       [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
+       [:button.btn.btn-primary.mt1 {:type "submit"} "Sign In"]
+       [RouterButton "/" [LeftArrow]]])))
 
 (defn LandingPage []
   [:div.flex.flex-column

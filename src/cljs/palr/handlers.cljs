@@ -31,10 +31,26 @@
 
 (re-frame/reg-event-fx
  :login
- (fn [ [_ username password]]
+ (fn [ctx [_ username password]]
    {:http-xhrio {:method          :post
                  :uri             "/login"
-                 :timeout         8000                                           ;; optional see API docs
+                 :timeout         8000
+                 :params          {:username username :password password}
+                 :format          (ajax/json-request-format)   ;; optional see API docs
                  :response-format (ajax/json-response-format {:keywords? true})  ;; IMPORTANT!: You must provide this.
                  :on-success      [:login-success]
                  :on-failure      [:login-failure]}}))
+
+
+(re-frame/reg-event-db
+ :login-success
+ (fn [db _]
+   (println "Login success" _)
+   db))
+
+
+(re-frame/reg-event-db
+ :login-failure
+ (fn [db _]
+   (println "Login failure" _)
+   db))
