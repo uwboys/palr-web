@@ -2,31 +2,25 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]))
 
-(def ^:const sakura-bg "https://66.media.tumblr.com/41281654247d0c1b622467039c2cdb05/tumblr_ncmmky30z11rxgopvo1_500.gif")
-(def ^:const snow-bg "http://i.makeagif.com/media/10-12-2015/rb3ZJZ.gif")
-
-(def ^:const bg-image (str "url(" sakura-bg ")"))
+(def ^:const colors
+  ["#EAEFBD" "#C9E3AC" "#90BE6D" "#EA9010" "#37371F"])
 
 (defn Title []
   [:h1.center.white {:style {:font-size "300%"
-                             :color "white"}} "palr"])
-
-(defn BlurredBackground []
-  [:div.fixed.top-0.left-0.bottom-0.right-0 {:style {;:background-image bg-image
-                                                     :background-size "cover"
-                                                     :z-index -1
-                                                     :filter "blur(10px)"}}])
+                             :color "white"}} "Palr"])
 
 (defn Container [& children]
   [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
    (into
-    [:div.flex.flex-column.relative {:style {:width "20rem" :padding-top "20vh"}}]
+    [:div.flex.flex-column.relative {:style {:width "20rem" :padding-top "22.5vh"}}]
     children)])
 
-(defn RouterButton [url text]
-  [:button {:type "button"
-            :on-click #(re-frame/dispatch [:change-route url])
-            :class "btn btn-primary mt1"} text])
+(defn RouterButton
+  ([url text] (RouterButton url text {}))
+  ([url text attrs]
+   [:button.btn.btn-primary.mt1.not-rounded
+    (merge {:type "button" :on-click #(re-frame/dispatch [:change-route url])} attrs)
+    text]))
 
 (defn LeftArrow []
   [:div {:dangerouslySetInnerHTML {:__html "&larr;"}}])
@@ -49,13 +43,14 @@
       [:form.flex.flex-column {:on-submit (dispatch-submit [:login username password])}
        [:input.input.mb1 (sync username {:type "text" :placeholder "Username"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
-       [:button.btn.btn-primary.mt1 {:type "submit"} "Sign In"]
-       [RouterButton "/" [LeftArrow]]])))
+       [:div.flex.relative
+        [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
+        [:button.btn.btn-primary.mt1.not-rounded.flex-auto {:type "submit" :style {:background-color (colors 2)}} "Sign In"]]])))
 
 (defn LandingPage []
   [:div.flex.flex-column
-   [RouterButton "/login" "Login"]
-   [RouterButton "/register" "Register"]])
+   [RouterButton "/login" "Login" {:style {:background-color (colors 2)}}]
+   [RouterButton "/register" "Register" {:style {:background-color (colors 2)}}]])
 
 (defn RegisterPage []
   (let [email    (reagent/atom "")
@@ -68,8 +63,9 @@
        [:input.input.mb1 (sync email {:type "email" :placeholder "Email"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
        [:input.input.mb1 (sync location {:type "text" :placeholder "Location"})]
-       [:button.btn.btn-primary.mt1 {:type "submit"} "Sign Up"]
-       [RouterButton "/" [LeftArrow]]])))
+       [:div.flex.relative
+        [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
+        [:button.btn.btn-primary.mt1.not-rounded.flex-auto {:type "submit" :style {:background-color (colors 2)}} "Sign Up"]]])))
 
 ;; main
 
