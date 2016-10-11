@@ -35,15 +35,18 @@
 (defn sync [atom attrs]
   (assoc attrs :value @atom :on-change #(reset! atom (-> % .-target .-value))))
 
+(defn dispatch-submit [[type & atoms] & resetters]
+  (fn [event]
+    (re-frame/dispatch (into [type] (map deref atoms)))
+    (doseq [atom atoms] (reset! atom ""))
+    (doseq [atom resetters] (reset! atom ""))
+    (.preventDefault event)))
+
 (defn LoginPage []
   (let [username (reagent/atom "")
         password (reagent/atom "")]
     (fn []
-      [:form.flex.flex-column {:on-submit #(do
-                                             (re-frame/dispatch [:login @username @password])
-                                             (reset! username "")
-                                             (reset! password "")
-                                             (.preventDefault %))}
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:login username password])}
        [:input.input.mb1 (sync username {:type "text" :placeholder "Username"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
        [:button.btn.btn-primary.mt1 {:type "submit"} "Sign In"]
@@ -55,13 +58,18 @@
    [RouterButton "/register" "Register"]])
 
 (defn RegisterPage []
-  [:div.flex.flex-column 
-   [:input.input.mb1 {:type "text" :placeholder "Username"}]
-   [:input.input.mb1 {:type "email" :placeholder "Email"}]
-   [:input.input.mb1 {:type "password" :placeholder "Password"}]
-   [:input.input.mb1 {:type "text" :placeholder "Location"}]
-   [RouterButton "/register" "Sign Up"]
-   [RouterButton "/" [LeftArrow]]])
+  (let [email    (reagent/atom "")
+        username (reagent/atom "")
+        password (reagent/atom "")
+        location (reagent/atom "")]
+    (fn []
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:register username password] email location)}
+       [:input.input.mb1 (sync username {:type "text" :placeholder "Username"})]
+       [:input.input.mb1 (sync email {:type "email" :placeholder "Email"})]
+       [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
+       [:input.input.mb1 (sync location {:type "text" :placeholder "Location"})]
+       [:button.btn.btn-primary.mt1 {:type "submit"} "Sign Up"]
+       [RouterButton "/" [LeftArrow]]])))
 
 ;; main
 

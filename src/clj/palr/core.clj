@@ -6,17 +6,28 @@
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [clojure.pprint :refer [pprint]]))
 
-(def users #{["ramanpreet" "isawesome"]})
-(def tokens {["ramanpreet" "isawesome"] "Ramanpreet's special token!"})
+(defn uuid [] (str (java.util.UUID/randomUUID)))
+(def tokens (atom {["ramanpreet" "isawesome"] (uuid)}))
 
 (defroutes api
   (POST "/login" {{:keys [username password]} :body}
     (let [creds [username password]]
       (pprint creds)
-      (if (contains? users creds)
-        (-> {:access-token (tokens creds)}
+      (if (contains? @tokens creds)
+        (-> {:access-token (@tokens creds)}
             (response)
             (status 200))
+        (-> {:error "Invalid credentials."}
+            (response)
+            (status 422)))))
+  (POST "/register" {{:keys [username password]} :body}
+    (let [creds [username password]]
+      (if (every? #(-> % count pos?) creds)
+        (let [id (uuid)]
+          (swap! tokens assoc creds id)
+          (-> {:access-token (@tokens creds)}
+              (response)
+              (status 201)))
         (-> {:error "Invalid credentials."}
             (response)
             (status 422))))))
