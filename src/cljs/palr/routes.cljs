@@ -27,5 +27,8 @@
   (defroute "/register" []
     (re-frame/dispatch [:set-active-panel :palr.views/register]))
 
+  (defroute "/palr-me" []
+    (re-frame/dispatch [:set-active-panel :palr.views/palr-me]))
+
   ;; --------------------
   (hook-browser-navigation!))

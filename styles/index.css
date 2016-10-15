@@ -29,12 +29,3 @@
 @import 'basscss-border';
 @import 'basscss-hide';
 @import 'basscss-color-forms';
-
-#snow {
-    background-image: url(https://images8.alphacoders.com/598/598776.jpg);
-    background-position: center center;
-    background-size: cover;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-}

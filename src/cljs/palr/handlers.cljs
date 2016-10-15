@@ -67,11 +67,10 @@
    (println "Register failure" _)
    db))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :login-success
- (fn [db _]
-   (println "Login success" _)
-   db))
+ (fn [ctx [_]]
+   {:dispatch [:change-route "/palr-me"]}))
 
 
 (re-frame/reg-event-db

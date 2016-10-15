@@ -1,19 +1,13 @@
 (ns palr.views
   (:require [re-frame.core :as re-frame]
-            [reagent.core :as reagent]))
+            [reagent.core :as reagent]
+            [palr.components :refer [snow-canvas]]))
 
 (def ^:const colors
   ["#EAEFBD" "#C9E3AC" "#90BE6D" "#EA9010" "#37371F"])
 
 (defn Title []
-  [:h1.center.white {:style {:font-size "300%"
-                             :color "white"}} "Palr"])
-
-(defn Container [& children]
-  [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
-   (into
-    [:div.flex.flex-column.relative {:style {:width "20rem" :padding-top "22.5vh"}}]
-    children)])
+  [:h1.center.white {:style {:font-size "300%"}} "Palr"])
 
 (defn RouterButton
   ([url text] (RouterButton url text {}))
@@ -24,7 +18,6 @@
 
 (defn LeftArrow []
   [:div {:dangerouslySetInnerHTML {:__html "&larr;"}}])
-
 
 (defn sync [atom attrs]
   (assoc attrs :value @atom :on-change #(reset! atom (-> % .-target .-value))))
@@ -67,6 +60,18 @@
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
         [:button.btn.btn-primary.mt1.not-rounded.flex-auto {:type "submit" :style {:background-color (colors 2)}} "Sign Up"]]])))
 
+(defn PalrBackground []
+  [snow-canvas {:width (.-innerWidth js/window)
+                :height (.-innerHeight js/window)
+                :style {:background-image "url(https://images8.alphacoders.com/598/598776.jpg)"
+                        :background-position "center center"
+                        :background-size "cover"
+                        :position "fixed"
+                        :width "100vw"
+                        :height "100vh"
+                        :top 0
+                        :z-index -1}}])
+
 ;; main
 
 (derive ::landing ::front-page)
@@ -74,20 +79,23 @@
 (derive ::register ::front-page)
 
 (defmulti panels identity)
-(defmethod panels ::front-page [panel-key]
-  [Container
-   [Title]
-   (condp = panel-key
-     ::landing [LandingPage]
-     ::login [LoginPage]
-     ::register [RegisterPage])])
-(defmethod panels :default [] [:div])
 
-(defn show-panel
-  [panel-name]
-  [panels panel-name])
+(defmethod panels ::palr-me []
+  [:div "Palr me!"])
+
+(defmethod panels ::front-page [panel-key]
+  [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
+   [PalrBackground]
+   [:div.flex.flex-column.relative {:style {:width "20rem" :padding-top "22.5vh"}}
+    [Title]
+    (condp = panel-key
+      ::landing [LandingPage]
+      ::login [LoginPage]
+      ::register [RegisterPage])]])
+
+(defmethod panels :default [] [:div])
 
 (defn main-panel []
   (let [active-panel (re-frame/subscribe [:active-panel])]
     (fn []
-      [show-panel @active-panel])))
+      [panels @active-panel])))
