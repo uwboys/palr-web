@@ -60,10 +60,10 @@
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
         [:button.btn.btn-primary.mt1.not-rounded.flex-auto {:type "submit" :style {:background-color (colors 2)}} "Sign Up"]]])))
 
-(defn PalrBackground []
+(defn PalrBackground [url]
   [snow-canvas {:width (.-innerWidth js/window)
                 :height (.-innerHeight js/window)
-                :style {:background-image "url(https://images8.alphacoders.com/598/598776.jpg)"
+                :style {:background-image (str "url(" url ")")
                         :background-position "center center"
                         :background-size "cover"
                         :position "fixed"
@@ -71,6 +71,26 @@
                         :height "100vh"
                         :top 0
                         :z-index -1}}])
+
+
+
+(defn Pals []
+  (let [pals #{{:name "Ramanpreet", :permanent true, :avatar "http://placehold.it/50x50"}
+               {:name "Maaz Ali", :permanent true, :avatar "http://placehold.it/50x50"}
+               {:name "Mandish Shah", :permanent true, :avatar "http://placehold.it/50x50"}
+               {:name "George", :permanent false, :avatar "http://placehold.it/50x50"}}]
+    (fn []
+      [:div.flex.items-center.flex-column {:style {:width "100vw" :height "100vh"}}
+       [PalrBackground "https://images8.alphacoders.com/598/598776.jpg"]
+       [:h1 {:style {:color (colors 4) :font-size "300%"}} "message pals"]
+       [:ul.list-reset.mb4 {:style {:width "80%"}}
+        (for [pal pals]
+          ^{:key pal} [:li.px2.py1.mb2.flex.items-center.btn.regular.rounded
+                       {:style {:background-color (colors 0)
+                                :box-shadow (str "0 0.05rem 0.5rem" (colors 1))
+                                :border-left (str "0.4rem solid " (if (:permanent pal) (colors 1) (colors 4)))}}
+                       [:img.circle.mr2 {:src (:avatar pal)}]
+                       [:span.h3 {:style {:color (colors 4)}} (:name pal)]])]])))
 
 ;; main
 
@@ -85,7 +105,7 @@
 
 (defmethod panels ::front-page [panel-key]
   [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
-   [PalrBackground]
+   [PalrBackground "https://images8.alphacoders.com/598/598776.jpg"]
    [:div.flex.flex-column.relative {:style {:width "20rem" :padding-top "22.5vh"}}
     [Title]
     (condp = panel-key
@@ -94,7 +114,7 @@
       ::register [RegisterPage])]])
 
 (defmethod panels ::pals []
-  [:div "Pals!"])
+  [Pals])
 
 (defmethod panels :default [] [:div])
 
