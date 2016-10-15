@@ -70,7 +70,8 @@
                         :width "100vw"
                         :height "100vh"
                         :top 0
-                        :z-index -1}}])
+                        :z-index -1
+                        :filter "blur(2px)"}}])
 
 
 
