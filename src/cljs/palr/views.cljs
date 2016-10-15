@@ -93,6 +93,9 @@
       ::login [LoginPage]
       ::register [RegisterPage])]])
 
+(defmethod panels ::pals []
+  [:div "Pals!"])
+
 (defmethod panels :default [] [:div])
 
 (defn main-panel []

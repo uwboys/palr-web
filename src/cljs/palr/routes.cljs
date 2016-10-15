@@ -14,21 +14,32 @@
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
+(defn signed-in [db]
+  (-> db :session :access-token empty? not))
+
+(def ^:const signed-out (complement signed-in))
+
 (defn app-routes []
   (secretary/set-config! :prefix "#")
   ;; --------------------
   ;; define routes here
   (defroute "/" []
-    (re-frame/dispatch [:set-active-panel :palr.views/landing]))
+    (re-frame/dispatch [:require-sap signed-out :palr.views/landing "/pals"]))
 
   (defroute "/login" []
-    (re-frame/dispatch [:set-active-panel :palr.views/login]))
+    (re-frame/dispatch [:require-sap signed-out :palr.views/login "/pals"]))
 
   (defroute "/register" []
-    (re-frame/dispatch [:set-active-panel :palr.views/register]))
+    (re-frame/dispatch [:require-sap signed-out :palr.views/register "/pals"]))
 
   (defroute "/palr-me" []
-    (re-frame/dispatch [:set-active-panel :palr.views/palr-me]))
+    (re-frame/dispatch [:require-sap signed-in :palr.views/palr-me "/"]))
+
+  (defroute "/pals" []
+    (re-frame/dispatch [:require-sap signed-in :palr.views/pals "/"]))
+
+  (defroute "*" []
+    (re-frame/dispatch [:change-route "/"]))
 
   ;; --------------------
   (hook-browser-navigation!))
