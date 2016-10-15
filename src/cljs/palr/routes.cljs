@@ -23,23 +23,33 @@
   (secretary/set-config! :prefix "#")
   ;; --------------------
   ;; define routes here
-  (defroute "/" []
-    (re-frame/dispatch [:require-sap signed-out :palr.views/landing "/pals"]))
+  (defroute "/" {:as params}
+    (re-frame/dispatch [:require-sap signed-out :palr.views/landing "/pals"])
+    (re-frame/dispatch [:reset-router-params params]))
 
-  (defroute "/login" []
-    (re-frame/dispatch [:require-sap signed-out :palr.views/login "/pals"]))
+  (defroute "/login" {:as params}
+    (re-frame/dispatch [:require-sap signed-out :palr.views/login "/pals"])
+    (re-frame/dispatch [:reset-router-params params]))
 
-  (defroute "/register" []
-    (re-frame/dispatch [:require-sap signed-out :palr.views/register "/pals"]))
+  (defroute "/register" {:as params}
+    (re-frame/dispatch [:require-sap signed-out :palr.views/register "/pals"])
+    (re-frame/dispatch [:reset-router-params params]))
 
-  (defroute "/palr-me" []
-    (re-frame/dispatch [:require-sap signed-in :palr.views/palr-me "/"]))
+  (defroute "/palr-me" {:as params}
+    (re-frame/dispatch [:require-sap signed-in :palr.views/palr-me "/"])
+    (re-frame/dispatch [:reset-router-params params]))
 
-  (defroute "/pals" []
+  (defroute "/pals/:id" {:as params}
+    (re-frame/dispatch [:reset-router-params params])
     (re-frame/dispatch [:require-sap signed-in :palr.views/pals "/"]))
 
-  (defroute "*" []
-    (re-frame/dispatch [:change-route "/"]))
+  (defroute "/pals" {:as params}
+    (re-frame/dispatch [:require-sap signed-in :palr.views/pals "/"])
+    (re-frame/dispatch [:reset-router-params params]))
+
+  (defroute "*" {:as params}
+    (re-frame/dispatch [:change-route "/"])
+    (re-frame/dispatch [:reset-router-params params]))
 
   ;; --------------------
   (hook-browser-navigation!))

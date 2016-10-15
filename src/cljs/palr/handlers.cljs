@@ -65,14 +65,12 @@
                  :on-success      [:register-success]
                  :on-failure      [:register-failure]}}))
 
-
 (re-frame/reg-event-db
  :register-success
  common-interceptors
  (fn [db _]
    (println "Register success" _)
    db))
-
 
 (re-frame/reg-event-db
  :register-failure
@@ -88,10 +86,15 @@
    (re-frame/dispatch [:change-route "/pals"])
    (assoc-in db [:session :access-token] access-token)))
 
-
 (re-frame/reg-event-db
  :login-failure
  common-interceptors
  (fn [db _]
    (println "Login failure" _)
    db))
+
+(re-frame/reg-event-db
+ :reset-router-params
+ common-interceptors
+ (fn [db [params]]
+   (assoc db :router-params params)))

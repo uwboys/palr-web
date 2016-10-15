@@ -10,7 +10,8 @@
                  [ring/ring-json "0.4.0"]
                  [ring/ring-defaults "0.2.1"]
                  [cljs-ajax "0.5.8"]
-                 [day8.re-frame/http-fx "0.1.1"]]
+                 [day8.re-frame/http-fx "0.1.1"]
+                 [com.andrewmcveigh/cljs-time "0.4.0"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]
             [lein-npm "0.6.2"]]

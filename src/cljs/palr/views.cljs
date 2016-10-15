@@ -72,25 +72,48 @@
                         :top 0
                         :z-index -1}}])
 
+(defn Avatar [url]
+  [:img.circle.my1.mx2 {:src url}])
 
+(defn ConversationCard [id name avatar]
+  [:div.flex.btn.p0.regular.p-hover-bg-gray {:on-click #(re-frame/dispatch [:change-route (str "/pals/" id)])}
+   [Avatar avatar]
+   [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
+    [:div.flex.justify-between
+     [:span.h4 {:style {:color (colors 4)}} name]
+     [:span.gray "date"]]]])
 
-(defn Pals []
-  (let [pals #{{:name "Ramanpreet", :permanent true, :avatar "http://placehold.it/50x50"}
-               {:name "Maaz Ali", :permanent true, :avatar "http://placehold.it/50x50"}
-               {:name "Mandish Shah", :permanent true, :avatar "http://placehold.it/50x50"}
-               {:name "George", :permanent false, :avatar "http://placehold.it/50x50"}}]
-    (fn []
-      [:div.flex.items-center.flex-column {:style {:width "100vw" :height "100vh"}}
+(defn ConversationHeader [name avatar]
+  [:div.flex.bg-darken-1
+   [Avatar avatar]
+   [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
+    [:span.h3 {:style {:color (colors 4)}} name]]])
+
+(defn Conversation [{:keys [id name avatar]}]
+  [ConversationHeader name avatar])
+
+(defn filter-one [func coll]
+  (-> (filter func coll) first))
+
+(defn Pals [router-params]
+  (let [pals #{{:name "Ramanpreet", :permanent true, :id "0", :avatar "http://placehold.it/40x40" :messages ["Yeah, man"]}
+               {:name "Maaz Ali", :permanent true, :id "1", :avatar "http://placehold.it/40x40" :messages ["yahoo"]}
+               {:name "Mandish Shah", :permanent true, :id "2", :avatar "http://placehold.it/40x40" :messages ["horse"]}
+               {:name "George", :permanent false, :id "3", :avatar "http://placehold.it/40x40" :messages ["cunt"]}}]
+    (fn [router-params]
+      [:div.flex.items-center.justify-center.flex-column {:style {:width "100vw" :height "100vh"}}
        [PalrBackground "../bg.png"]
-       [:h1 {:style {:color (colors 4) :font-size "300%"}} "message pals"]
-       [:ul.list-reset.mb4 {:style {:width "80%"}}
-        (for [pal pals]
-          ^{:key pal} [:li.px2.py1.mb2.flex.items-center.btn.regular.rounded
-                       {:style {:background-color (colors 0)
-                                :box-shadow (str "0 0.05rem 0.5rem" (colors 1))
-                                :border-left (str "0.4rem solid " (if (:permanent pal) (colors 1) (colors 4)))}}
-                       [:img.circle.mr2 {:src (:avatar pal)}]
-                       [:span.h3 {:style {:color (colors 4)}} (:name pal)]])]])))
+       [:div.flex.clearfix {:style {:width "90%" :height "90%" :background-color "rgba(255, 255, 255, 0.95)"}}
+        [:div.col-4.m0.overflow-scroll
+         [:h2.h2.center.px2 "Pals"]
+         (for [pal pals]
+           (let [{:keys [id name avatar]} pal]
+             ^{:key id} [ConversationCard id name avatar]))]
+        [:div.col-8
+         [:div.overflow-scroll.p2.bg-white {:style {:height "100%"}}
+          (if-let [id (:id router-params)]
+            [Conversation (filter-one #(= (:id %) id) pals)]
+            [:div.flex.justify-center.items-center {:style {:height "100%"}} "Please pick a pal!"])]]]])))
 
 ;; main
 
@@ -113,12 +136,13 @@
       ::login [LoginPage]
       ::register [RegisterPage])]])
 
-(defmethod panels ::pals []
-  [Pals])
+(defmethod panels ::pals [_ router-params]
+  [Pals router-params])
 
 (defmethod panels :default [] [:div])
 
 (defn main-panel []
-  (let [active-panel (re-frame/subscribe [:active-panel])]
+  (let [active-panel (re-frame/subscribe [:active-panel])
+        router-params (re-frame/subscribe [:router-params])]
     (fn []
-      [panels @active-panel])))
+      [panels @active-panel @router-params])))

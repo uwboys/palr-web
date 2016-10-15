@@ -29,3 +29,11 @@
 @import 'basscss-border';
 @import 'basscss-hide';
 @import 'basscss-color-forms';
+
+.p-hover-bg-gray:hover {
+    background-color: #e9ebeb;
+}
+
+.p-border-bottom {
+    border-bottom: 1px solid #e9ebeb;
+}
