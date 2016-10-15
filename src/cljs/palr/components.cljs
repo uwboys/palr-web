@@ -48,7 +48,7 @@
 
 (defn animate! [canvas]
   (let [dims [(.-width canvas) (.-height canvas)]
-        particles (atom (create-particles! dims 25))
+        particles (atom (create-particles! dims 30))
         angle (atom 0)]
     ((fn tick []
        (js/requestAnimationFrame tick)

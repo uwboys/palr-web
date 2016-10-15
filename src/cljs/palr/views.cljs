@@ -70,8 +70,7 @@
                         :width "100vw"
                         :height "100vh"
                         :top 0
-                        :z-index -1
-                        :filter "blur(2px)"}}])
+                        :z-index -1}}])
 
 
 
@@ -82,7 +81,7 @@
                {:name "George", :permanent false, :avatar "http://placehold.it/50x50"}}]
     (fn []
       [:div.flex.items-center.flex-column {:style {:width "100vw" :height "100vh"}}
-       [PalrBackground "https://images8.alphacoders.com/598/598776.jpg"]
+       [PalrBackground "../bg.png"]
        [:h1 {:style {:color (colors 4) :font-size "300%"}} "message pals"]
        [:ul.list-reset.mb4 {:style {:width "80%"}}
         (for [pal pals]
@@ -106,7 +105,7 @@
 
 (defmethod panels ::front-page [panel-key]
   [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
-   [PalrBackground "https://images8.alphacoders.com/598/598776.jpg"]
+   [PalrBackground "../bg.png"]
    [:div.flex.flex-column.relative {:style {:width "20rem" :padding-top "22.5vh"}}
     [Title]
     (condp = panel-key

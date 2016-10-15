@@ -85,7 +85,7 @@
  :login-success
  common-interceptors
  (fn [db [{:keys [access-token]}]]
-   (re-frame/dispatch [:change-route "/palr-me"])
+   (re-frame/dispatch [:change-route "/pals"])
    (assoc-in db [:session :access-token] access-token)))
 
 
