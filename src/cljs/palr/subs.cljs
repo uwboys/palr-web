@@ -16,3 +16,8 @@
  :router-params
  (fn [db _]
    (:router-params db)))
+
+(re-frame/reg-sub
+ :conversations
+ (fn [db _]
+   (:conversations db)))
