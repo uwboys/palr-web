@@ -153,3 +153,31 @@
  :reset-router-params
  (fn [db [params]]
    (assoc db :router-params params)))
+
+;; request a pal
+
+(reg-fx
+ :request-pal
+ (fn [{:keys [db]} [type]]
+   (let [access-token (-> db :session :access-token)]
+     {:http-xhrio {:method          :post
+                   :uri             (palr.util/api "/match")
+                   :params          {:type type}
+                   :timeout         8000
+                   :headers         {:authorization access-token}
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:request-pal-success]
+                   :on-failure      [:request-pal-failure]}})))
+
+(reg-db
+ :request-pal-success
+ (fn [db event]
+   (println event)
+   db))
+
+(reg-db
+ :request-pal-failure
+ (fn [db event]
+   (println event)
+   db))
