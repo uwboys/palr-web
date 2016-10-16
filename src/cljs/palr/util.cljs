@@ -27,3 +27,11 @@
 (defn api [uri]
   (let [base-url "http://d1f497ce.ngrok.io"]
     (str base-url uri)))
+
+(defn attr-into [d s]
+  (if (every? coll? [d s]) (into d s) s))
+
+(defn merge-attrs [dest source]
+  (let [dest-class (str (:class dest) " " (:class source))]
+    (-> (merge-with attr-into dest source)
+        (assoc :class dest-class))))

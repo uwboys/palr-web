@@ -46,12 +46,12 @@
          (assoc p :x x :y y))))
    particles))
 
-(defn animate! [canvas]
+(defn animate! [stop canvas]
   (let [dims [(.-width canvas) (.-height canvas)]
         particles (atom (create-particles! dims 30))
         angle (atom 0)]
     ((fn tick []
-       (js/requestAnimationFrame tick)
+       (when-not @stop (js/requestAnimationFrame tick))
        (let [dims [(.-width canvas) (.-height canvas)]
              context (.getContext canvas "2d")]
          (draw! @particles dims context)
@@ -59,12 +59,17 @@
          (swap! particles update! dims @angle))))))
 
 (defn snow-canvas [width height]
-  (reagent/create-class
-   {:component-did-mount
-    (fn [this]
-      (let [canvas (reagent/dom-node this)]
-        (animate! canvas)))
+  (let [stop (atom false)]
+    (reagent/create-class
+     {:component-did-mount
+      (fn [this]
+        (let [canvas (reagent/dom-node this)]
+          (animate! stop canvas)))
 
-    :reagent-render
-    (fn [& attrs]
-      (into [:canvas] attrs))}))
+      :component-will-unmount
+      (fn [this]
+        (reset! stop true))
+
+      :reagent-render
+      (fn [& attrs]
+        (into [:canvas] attrs))})))

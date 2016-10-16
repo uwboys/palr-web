@@ -1,7 +1,8 @@
 (ns palr.views
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
-            [palr.components :refer [snow-canvas]]))
+            [palr.components :refer [snow-canvas]]
+            [palr.util]))
 
 (def ^:const colors
   ["#EAEFBD" "#C9E3AC" "#90BE6D" "#EA9010" "#37371F"])
@@ -29,6 +30,13 @@
     (doseq [atom resetters] (reset! atom ""))
     (.preventDefault event)))
 
+(defn PalrButton
+  ([child] (PalrButton {} child))
+  ([attrs child]
+   [:button.btn.btn-primary.mt1.not-rounded
+    (palr.util/merge-attrs {:type "submit" :style {:background-color (colors 2)}} attrs)
+    child]))
+
 (defn LoginPage []
   (let [email (reagent/atom "")
         password (reagent/atom "")]
@@ -38,7 +46,7 @@
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
        [:div.flex.relative
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
-        [:button.btn.btn-primary.mt1.not-rounded.flex-auto {:type "submit" :style {:background-color (colors 2)}} "Sign In"]]])))
+        [PalrButton {:type "submit" :class "flex-auto"} "Sign In"]]])))
 
 (defn LandingPage []
   [:div.flex.flex-column
@@ -46,7 +54,7 @@
    [RouterButton "/register" "Register" {:style {:background-color (colors 2)}}]])
 
 (defn RegisterPage []
-  (let [name (reagent/atom "")
+  (let [name     (reagent/atom "")
         email    (reagent/atom "")
         password (reagent/atom "")
         location (reagent/atom "")]
@@ -58,19 +66,19 @@
        [:input.input.mb1 (sync location {:type "text" :placeholder "Location"})]
        [:div.flex.relative
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
-        [:button.btn.btn-primary.mt1.not-rounded.flex-auto {:type "submit" :style {:background-color (colors 2)}} "Sign Up"]]])))
+        [PalrButton {:type "submit" :class "flex-auto"} "Sign Up"]]])))
 
 (defn PalrBackground [url]
-  [snow-canvas {:width (.-innerWidth js/window)
+  [snow-canvas {:width  (.-innerWidth js/window)
                 :height (.-innerHeight js/window)
-                :style {:background-image (str "url(" url ")")
-                        :background-position "center center"
-                        :background-size "cover"
-                        :position "fixed"
-                        :width "100vw"
-                        :height "100vh"
-                        :top 0
-                        :z-index -1}}])
+                :style  {:background-image (str "url(" url ")")
+                         :background-position "center center"
+                         :background-size "cover"
+                         :position "fixed"
+                         :width "100vw"
+                         :height "100vh"
+                         :top 0
+                         :z-index -1}}])
 
 (defn Avatar [url]
   [:img.circle.my1.mx2 {:src url}])
@@ -95,15 +103,20 @@
 (defn filter-one [func coll]
   (-> (filter func coll) first))
 
+(defn PalrContainer [& attrs]
+  [:div.flex.items-center.justify-center.flex-column {:style {:width "100vw" :height "100vh"}}
+   [PalrBackground "../bg.png"]
+   (into [:div.rounded {:style {:width "90%" :height "90%" :background-color "rgba(255, 255, 255, 0.95)"}}]
+         attrs)])
+
 (defn Pals [router-params]
   (let [pals #{{:name "Ramanpreet", :permanent true, :id "0", :avatar "http://placehold.it/40x40" :messages ["Yeah, man"]}
                {:name "Maaz Ali", :permanent true, :id "1", :avatar "http://placehold.it/40x40" :messages ["yahoo"]}
                {:name "Mandish Shah", :permanent true, :id "2", :avatar "http://placehold.it/40x40" :messages ["horse"]}
                {:name "George", :permanent false, :id "3", :avatar "http://placehold.it/40x40" :messages ["cunt"]}}]
     (fn [router-params]
-      [:div.flex.items-center.justify-center.flex-column {:style {:width "100vw" :height "100vh"}}
-       [PalrBackground "../bg.png"]
-       [:div.flex.clearfix {:style {:width "90%" :height "90%" :background-color "rgba(255, 255, 255, 0.95)"}}
+      [PalrContainer
+       [:div.flex.clearfix
         [:div.col-4.m0.overflow-scroll
          [:h2.h2.center.px2 "Pals"]
          (for [pal pals]
@@ -115,6 +128,14 @@
             [Conversation (filter-one #(= (:id %) id) pals)]
             [:div.flex.justify-center.items-center {:style {:height "100%"}} "Please pick a pal!"])]]]])))
 
+(defn PalrMe []
+  [PalrContainer
+   [:h1.h1.center "find a penpal"]
+   [:div.flex.flex-column.justify-center.items-center {:style {:width "100%" :height "100%"}}
+    [PalrButton "Learn"]
+    [PalrButton "Tal"]
+    [PalrButton "Listen"]]])
+
 ;; main
 
 (derive ::landing ::front-page)
@@ -124,7 +145,7 @@
 (defmulti panels identity)
 
 (defmethod panels ::palr-me []
-  [:div "Palr me!"])
+  [PalrMe])
 
 (defmethod panels ::front-page [panel-key]
   [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
