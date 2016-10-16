@@ -30,27 +30,29 @@
   ;; --------------------
   ;; define routes here
   (defroute "/" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-in? "/pals"] :palr.views/landing])
+    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] :palr.views/landing])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/login" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-in? "/pals"] :palr.views/login])
+    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] :palr.views/login])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/register" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-in? "/pals"] :palr.views/register])
+    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] :palr.views/register])
     (re-frame/dispatch [:reset-router-params params]))
 
-  (defroute "/palr-me" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-out? "/" has-temporary-conversation? "/pals"] :palr.views/palr-me])
+  (defroute "/match-me" {:as params}
+    (re-frame/dispatch [:cond-sap [signed-out? "/"] :palr.views/match-me])
     (re-frame/dispatch [:reset-router-params params]))
 
-  (defroute "/pals/:id" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-out? "/" has-no-conversations? "/palr-me"] :palr.views/pals])
+  (defroute "/conversations/:id" {:as params}
+    (re-frame/dispatch [:fetch-conversations])
+    (re-frame/dispatch [:cond-sap [signed-out? "/"] :palr.views/conversations])
     (re-frame/dispatch [:reset-router-params params]))
 
-  (defroute "/pals" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-out? "/" has-no-conversations? "/palr-me"] :palr.views/pals])
+  (defroute "/conversations" {:as params}
+    (re-frame/dispatch [:fetch-conversations])
+    (re-frame/dispatch [:cond-sap [signed-out? "/"] :palr.views/conversations])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "*" {:as params}

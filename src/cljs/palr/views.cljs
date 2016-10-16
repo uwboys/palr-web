@@ -34,7 +34,7 @@
   ([child] (PalrButton {} child))
   ([attrs child]
    [:button.btn.btn-primary.mt1.not-rounded
-    (palr.util/merge-attrs {:type "submit" :style {:background-color (colors 2)}} attrs)
+    (palr.util/merge-attrs {:type "button" :style {:background-color (colors 2)}} attrs)
     child]))
 
 (defn LoginPage []
@@ -83,22 +83,24 @@
 (defn Avatar [url]
   [:img.circle.my1.mx2 {:src url}])
 
-(defn ConversationCard [id name avatar]
-  [:div.flex.btn.p0.regular.p-hover-bg-gray {:on-click #(re-frame/dispatch [:change-route (str "/pals/" id)])}
+(def avatar "http://placehold.it/40x40")
+
+(defn ConversationCard [id name date]
+  [:div.flex.btn.p0.regular.p-hover-bg-gray {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" id)])}
    [Avatar avatar]
    [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
     [:div.flex.justify-between
      [:span.h4 {:style {:color (colors 4)}} name]
-     [:span.gray "date"]]]])
+     [:span.gray date]]]])
 
-(defn ConversationHeader [name avatar]
+(defn ConversationHeader [name]
   [:div.flex.bg-darken-1
    [Avatar avatar]
    [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
     [:span.h3 {:style {:color (colors 4)}} name]]])
 
-(defn Conversation [{:keys [id name avatar]}]
-  [ConversationHeader name avatar])
+(defn Conversation [{:keys [id] {:keys [name]} :pal }]
+  [ConversationHeader name])
 
 (defn filter-one [func coll]
   (-> (filter func coll) first))
@@ -109,32 +111,28 @@
    (into [:div.rounded {:style {:width "90%" :height "90%" :background-color "rgba(255, 255, 255, 0.95)"}}]
          attrs)])
 
-(defn Pals [router-params]
-  (let [pals #{{:name "Ramanpreet", :permanent true, :id "0", :avatar "http://placehold.it/40x40" :messages ["Yeah, man"]}
-               {:name "Maaz Ali", :permanent true, :id "1", :avatar "http://placehold.it/40x40" :messages ["yahoo"]}
-               {:name "Mandish Shah", :permanent true, :id "2", :avatar "http://placehold.it/40x40" :messages ["horse"]}
-               {:name "George", :permanent false, :id "3", :avatar "http://placehold.it/40x40" :messages ["cunt"]}}]
+(defn ConversationsPage [router-params]
+  (let [conversations (re-frame/subscribe [:conversations])]
     (fn [router-params]
       [PalrContainer
        [:div.flex.clearfix
         [:div.col-4.m0.overflow-scroll
          [:h2.h2.center.px2 "Pals"]
-         (for [pal pals]
-           (let [{:keys [id name avatar]} pal]
-             ^{:key id} [ConversationCard id name avatar]))]
+         (for [{id :id {name :name} :pal} @conversations]
+           ^{:key id} [ConversationCard id name])]
         [:div.col-8
          [:div.overflow-scroll.p2.bg-white {:style {:height "100%"}}
           (if-let [id (:id router-params)]
-            [Conversation (filter-one #(= (:id %) id) pals)]
+            [Conversation (filter-one #(= (:id %) id) @conversations)]
             [:div.flex.justify-center.items-center {:style {:height "100%"}} "Please pick a pal!"])]]]])))
 
-(defn PalrMe []
+(defn MatchMe []
   [PalrContainer
-   [:h1.h1.center "find a penpal"]
-   [:div.flex.flex-column.justify-center.items-center {:style {:width "100%" :height "100%"}}
-    [PalrButton "Learn"]
-    [PalrButton "Tal"]
-    [PalrButton "Listen"]]])
+   [:div.flex.justify-center {:style {:width "100%" :height "100%"}}
+    [:div.flex.flex-column.justify-center {:style {:width "20rem"}}
+     [PalrButton {:on-click #(re-frame/dispatch [:request-pal "LEARN"])} "Learn"]
+     [PalrButton {:on-click #(re-frame/dispatch [:request-pal "TALK"])} "Talk"]
+     [PalrButton {:on-click #(re-frame/dispatch [:request-pal "LISTEN"])} "Listen"]]]])
 
 ;; main
 
@@ -144,8 +142,8 @@
 
 (defmulti panels identity)
 
-(defmethod panels ::palr-me []
-  [PalrMe])
+(defmethod panels ::match-me []
+  [MatchMe])
 
 (defmethod panels ::front-page [panel-key]
   [:div.flex.justify-center {:style {:width "100vw" :height "100vh"}}
@@ -157,8 +155,8 @@
       ::login [LoginPage]
       ::register [RegisterPage])]])
 
-(defmethod panels ::pals [_ router-params]
-  [Pals router-params])
+(defmethod panels ::conversations [_ router-params]
+  [ConversationsPage router-params])
 
 (defmethod panels :default [] [:div])
 
