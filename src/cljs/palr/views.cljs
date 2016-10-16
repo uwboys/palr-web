@@ -33,7 +33,7 @@
   (let [email (reagent/atom "")
         password (reagent/atom "")]
     (fn []
-      [:form.flex.flex-column {:on-submit (dispatch-submit [:login email password])}
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:login-flow email password])}
        [:input.input.mb1 (sync email {:type "text" :placeholder "Email"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
        [:div.flex.relative
@@ -51,7 +51,7 @@
         password (reagent/atom "")
         location (reagent/atom "")]
     (fn []
-      [:form.flex.flex-column {:on-submit (dispatch-submit [:register name email password location])}
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:register-flow name email password location])}
        [:input.input.mb1 (sync name {:type "text" :placeholder "Name"})]
        [:input.input.mb1 (sync email {:type "email" :placeholder "Email"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]

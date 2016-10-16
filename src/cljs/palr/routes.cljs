@@ -14,37 +14,43 @@
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
-(defn signed-in [db]
-  (-> db :session :access-token empty? not))
+(defn has-no-conversations? [db]
+  (-> db :conversations empty?))
 
-(def ^:const signed-out (complement signed-in))
+(defn signed-out? [db]
+  (-> db :session :access-token empty?))
+
+(defn has-temporary-conversation? [db]
+  (->> db :conversations (every? :isPermanent) not))
+
+(def ^:const signed-in? (complement signed-in?))
 
 (defn app-routes []
   (secretary/set-config! :prefix "#")
   ;; --------------------
   ;; define routes here
   (defroute "/" {:as params}
-    (re-frame/dispatch [:require-sap signed-out :palr.views/landing "/pals"])
+    (re-frame/dispatch [:cond-sap [signed-in? "/pals"] :palr.views/landing])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/login" {:as params}
-    (re-frame/dispatch [:require-sap signed-out :palr.views/login "/pals"])
+    (re-frame/dispatch [:cond-sap [signed-in? "/pals"] :palr.views/login])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/register" {:as params}
-    (re-frame/dispatch [:require-sap signed-out :palr.views/register "/pals"])
+    (re-frame/dispatch [:cond-sap [signed-in? "/pals"] :palr.views/register])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/palr-me" {:as params}
-    (re-frame/dispatch [:require-sap signed-in :palr.views/palr-me "/"])
+    (re-frame/dispatch [:cond-sap [signed-out? "/" has-temporary-conversation? "/pals"] :palr.views/palr-me])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/pals/:id" {:as params}
-    (re-frame/dispatch [:reset-router-params params])
-    (re-frame/dispatch [:require-sap signed-in :palr.views/pals "/"]))
+    (re-frame/dispatch [:cond-sap [signed-out? "/" has-no-conversations? "/palr-me"] :palr.views/pals])
+    (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/pals" {:as params}
-    (re-frame/dispatch [:require-sap signed-in :palr.views/pals "/"])
+    (re-frame/dispatch [:cond-sap [signed-out? "/" has-no-conversations? "/palr-me"] :palr.views/pals])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "*" {:as params}

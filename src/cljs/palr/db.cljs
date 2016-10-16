@@ -4,4 +4,5 @@
 (def default-db
   {:name "re-frame"
    :session (or (palr.util/fetch-session-from-storage!) {})
+   :conversations []
    :router-params {}})

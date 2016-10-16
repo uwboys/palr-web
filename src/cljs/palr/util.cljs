@@ -23,3 +23,7 @@
   "Set the location hash of a js/window object."
   ([v] (set-hash! (.-location js/window) v))
   ([location v] (aset location "hash" v)))
+
+(defn api [uri]
+  (let [base-url "http://d1f497ce.ngrok.io"]
+    (str base-url uri)))
