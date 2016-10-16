@@ -23,7 +23,7 @@
 (defn has-temporary-conversation? [db]
   (->> db :conversations (every? :isPermanent) not))
 
-(def ^:const signed-in? (complement signed-in?))
+(def signed-in? (complement signed-out?))
 
 (defn app-routes []
   (secretary/set-config! :prefix "#")
