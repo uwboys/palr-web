@@ -115,7 +115,7 @@
   (let [conversations (re-frame/subscribe [:conversations])]
     (fn [router-params]
       [PalrContainer
-       [:div.flex.clearfix
+       [:div.flex.clearfix {:style {:height "100%"}}
         [:div.col-4.m0.overflow-scroll
          [:h2.h2.center.px2 "Pals"]
          (for [{id :id {name :name} :pal} @conversations]
