@@ -39,14 +39,18 @@
      (palr.util/set-hash! hash)
      db)))
 
+(defn api [uri]
+  (let [base-url "http://d1f497ce.ngrok.io"]
+    (str base-url uri)))
+
 (re-frame/reg-event-fx
  :login
  common-interceptors
- (fn [ctx [username password]]
+ (fn [ctx [email password]]
    {:http-xhrio {:method          :post
-                 :uri             "/login"
+                 :uri             (api "/login")
                  :timeout         8000
-                 :params          {:username username :password password}
+                 :params          {:email email :password password}
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:login-success]
@@ -55,22 +59,15 @@
 (re-frame/reg-event-fx
  :register
  common-interceptors
- (fn [ctx [username password]]
+ (fn [ctx [name email password location]]
    {:http-xhrio {:method          :post
-                 :uri             "/register"
+                 :uri             (api "/register")
                  :timeout         8000
-                 :params          {:username username :password password}
+                 :params          {:name name :email email :password password :location location}
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:register-success]
+                 :on-success      [:login-success]
                  :on-failure      [:register-failure]}}))
-
-(re-frame/reg-event-db
- :register-success
- common-interceptors
- (fn [db _]
-   (println "Register success" _)
-   db))
 
 (re-frame/reg-event-db
  :register-failure
@@ -82,9 +79,9 @@
 (re-frame/reg-event-db
  :login-success
  common-interceptors
- (fn [db [{:keys [access-token]}]]
+ (fn [db [{:keys [accessToken]}]]
    (re-frame/dispatch [:change-route "/pals"])
-   (assoc-in db [:session :access-token] access-token)))
+   (assoc-in db [:session :access-token] accessToken)))
 
 (re-frame/reg-event-db
  :login-failure

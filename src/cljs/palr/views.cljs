@@ -30,11 +30,11 @@
     (.preventDefault event)))
 
 (defn LoginPage []
-  (let [username (reagent/atom "")
+  (let [email (reagent/atom "")
         password (reagent/atom "")]
     (fn []
-      [:form.flex.flex-column {:on-submit (dispatch-submit [:login username password])}
-       [:input.input.mb1 (sync username {:type "text" :placeholder "Username"})]
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:login email password])}
+       [:input.input.mb1 (sync email {:type "text" :placeholder "Email"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
        [:div.flex.relative
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
@@ -46,13 +46,13 @@
    [RouterButton "/register" "Register" {:style {:background-color (colors 2)}}]])
 
 (defn RegisterPage []
-  (let [email    (reagent/atom "")
-        username (reagent/atom "")
+  (let [name (reagent/atom "")
+        email    (reagent/atom "")
         password (reagent/atom "")
         location (reagent/atom "")]
     (fn []
-      [:form.flex.flex-column {:on-submit (dispatch-submit [:register username password] email location)}
-       [:input.input.mb1 (sync username {:type "text" :placeholder "Username"})]
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:register name email password location])}
+       [:input.input.mb1 (sync name {:type "text" :placeholder "Name"})]
        [:input.input.mb1 (sync email {:type "email" :placeholder "Email"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
        [:input.input.mb1 (sync location {:type "text" :placeholder "Location"})]
