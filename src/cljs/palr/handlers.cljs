@@ -11,20 +11,30 @@
 (def common-interceptors [palr.middleware/persist-session!
                           re-frame/trim-v])
 
-(re-frame/reg-event-db
+(defn reg-db [type func]
+  (re-frame/reg-event-db
+   type
+   common-interceptors
+   func))
+
+(defn reg-fx [type func]
+  (re-frame/reg-event-fx
+   type
+   common-interceptors
+   func))
+
+(reg-db
  :initialize-db
  (fn  [_ _]
    db/default-db))
 
-(re-frame/reg-event-db
+(reg-db
  :set-active-panel
- common-interceptors
  (fn [db [active-panel]]
    (assoc db :active-panel active-panel)))
 
-(re-frame/reg-event-fx
+(reg-fx
  :cond-sap
- common-interceptors
  (fn [{:keys [db]} [redirects panel]]
    {:dispatch
     (loop [redirects' (partition 2 redirects)]
@@ -34,43 +44,37 @@
           (recur others))
         [:set-active-panel panel]))}))
 
-(re-frame/reg-event-db
+(reg-db
  :change-route
- common-interceptors
  (fn [db [hash]]
-   (do
-     (secretary/dispatch! hash)
-     (palr.util/set-hash! hash)
-     db)))
+   (secretary/dispatch! hash)
+   (palr.util/set-hash! hash)
+   db))
 
 (defn auth-flow [first-dispatch success-action]
   {:first-dispatch first-dispatch
    :rules [{:when :seen? :events [success-action] :dispatch [:fetch-conversations]}
            {:when :seen? :events [:fetch-conversations-success] :dispatch [:auth-flow-success] :halt? true}]})
 
-(re-frame/reg-event-fx
+(reg-fx
  :login-flow
- common-interceptors
  (fn [_ [email password]]
    {:async-flow (auth-flow [:login email password] :login-success)}))
 
-(re-frame/reg-event-fx
+(reg-fx
  :register-flow
- common-interceptors
  (fn [_ [name email password location]]
    {:async-flow (auth-flow [:register name email password location] :register-success)}))
 
-(re-frame/reg-event-fx
+(reg-fx
  :auth-flow-success
- common-interceptors
  (fn [_ _]
    {:dispatch [:change-route "/pals"]}))
 
 ;; Login
 
-(re-frame/reg-event-fx
+(reg-fx
  :login
- common-interceptors
  (fn [ctx [email password]]
    {:http-xhrio {:method          :post
                  :uri             (palr.util/api "/login")
@@ -81,24 +85,21 @@
                  :on-success      [:login-success]
                  :on-failure      [:login-failure]}}))
 
-(re-frame/reg-event-db
+(reg-db
  :login-success
- common-interceptors
  (fn [db [{:keys [accessToken]}]]
    (assoc-in db [:session :access-token] accessToken)))
 
-(re-frame/reg-event-db
+(reg-db
  :login-failure
- common-interceptors
  (fn [db event]
    (println "Login failure" event)
    db))
 
 ;; Register
 
-(re-frame/reg-event-fx
+(reg-fx
  :register
- common-interceptors
  (fn [ctx [name email password location]]
    {:http-xhrio {:method          :post
                  :uri             (palr.util/api "/register")
@@ -109,25 +110,22 @@
                  :on-success      [:register-success]
                  :on-failure      [:register-failure]}}))
 
-(re-frame/reg-event-db
+(reg-db
  :register-success
- common-interceptors
  (fn [db [{:keys [accessToken]}]]
    (assoc-in db [:session :access-token] accessToken)))
 
 
-(re-frame/reg-event-db
+(reg-db
  :register-failure
- common-interceptors
  (fn [db event]
    (println "Register failure" event)
    db))
 
 ;; Fetch Conversations
 
-(re-frame/reg-event-fx
+(reg-fx
  :fetch-conversations
- common-interceptors
  (fn [{db :db} _]
    (let [access-token (-> db :session :access-token)]
      {:http-xhrio {:method          :get
@@ -138,23 +136,20 @@
                    :on-success      [:fetch-conversations-success]
                    :on-failure      [:fetch-conversations-failure]}})))
 
-(re-frame/reg-event-db
+(reg-db
  :fetch-conversations-success
- common-interceptors
  (fn [db [conversations]]
    (assoc db :conversations conversations)))
 
-(re-frame/reg-event-db
+(reg-db
  :fetch-conversations-failure
- common-interceptors
  (fn [db event]
    (println "Failed to fetch conversations" event)
    db))
 
 ;;
 
-(re-frame/reg-event-db
+(reg-db
  :reset-router-params
- common-interceptors
  (fn [db [params]]
    (assoc db :router-params params)))
