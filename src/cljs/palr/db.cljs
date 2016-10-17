@@ -5,4 +5,5 @@
   {:name "re-frame"
    :session (or (palr.util/fetch-session-from-storage!) {})
    :conversations []
+   :messages {}
    :router-params {}})

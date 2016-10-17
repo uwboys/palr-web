@@ -181,3 +181,70 @@
  (fn [db event]
    (println event)
    db))
+
+
+;; fetch messages
+
+(reg-fx
+ :fetch-messages
+ (fn [{:keys [db]} [conversation-data-id]]
+   (let [access-token (-> db :session :access-token)]
+     {:http-xhrio {:method          :get
+                   :uri             (palr.util/api "/messages")
+                   :params          {:conversationDataId conversation-data-id}
+                   :timeout         8000
+                   :headers         {:authorization access-token}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:fetch-messages-success]
+                   :on-failure      [:fetch-messages-failure]}})))
+
+(reg-db
+ :fetch-messages-success
+ (fn [db [messages]]
+   (if (empty? messages)
+     db
+     (let [id (-> messages first :conversationDataId)]
+       (assoc-in db [:messages id] messages)))))
+
+(reg-db
+ :fetch-messages-failure
+ (fn [db event]
+   (println event)
+   db))
+
+;; save message flow
+
+(reg-fx
+ :save-message-flow
+ (fn [cfx [conversation-data-id content]]
+   {:async-flow {:first-dispatch [:save-message conversation-data-id content]
+                 :rules [{:when :seen? :events [:save-message-success] :dispatch [:fetch-messages conversation-data-id]}]}}))
+
+;; save a message
+
+(reg-fx
+ :save-message
+ (fn [{:keys [db]} [conversation-data-id content]]
+   (let [access-token (-> db :session :access-token)]
+     (println conversation-data-id content)
+     {:http-xhrio {:method          :post
+                   :uri             (palr.util/api "/messages")
+                   :params          {:conversationDataId conversation-data-id :content content}
+                   :timeout         8000
+                   :headers         {:authorization access-token}
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:save-message-success]
+                   :on-failure      [:save-message-failure]}})))
+
+(reg-db
+ :save-message-success
+ (fn [db event]
+   (println event)
+   db))
+
+(reg-db
+ :save-message-failure
+ (fn [db event]
+   (println event)
+   db))

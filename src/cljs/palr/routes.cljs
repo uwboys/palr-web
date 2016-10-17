@@ -47,6 +47,7 @@
 
   (defroute "/conversations/:id" {:as params}
     (re-frame/dispatch [:fetch-conversations])
+    (re-frame/dispatch [:fetch-messages (:id params)])
     (re-frame/dispatch [:cond-sap [signed-out? "/"] :palr.views/conversations])
     (re-frame/dispatch [:reset-router-params params]))
 

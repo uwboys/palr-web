@@ -2,7 +2,9 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
             [palr.components :refer [snow-canvas]]
-            [palr.util]))
+            [palr.util]
+            [cljs-time.format :as ctf]
+            [cljs-time.core :as ctc]))
 
 (def ^:const colors
   ["#EAEFBD" "#C9E3AC" "#90BE6D" "#EA9010" "#37371F"])
@@ -33,7 +35,7 @@
 (defn PalrButton
   ([child] (PalrButton {} child))
   ([attrs child]
-   [:button.btn.btn-primary.mt1.not-rounded
+   [:button.btn.btn-primary.not-rounded
     (palr.util/merge-attrs {:type "button" :style {:background-color (colors 2)}} attrs)
     child]))
 
@@ -46,7 +48,7 @@
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
        [:div.flex.relative
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
-        [PalrButton {:type "submit" :class "flex-auto"} "Sign In"]]])))
+        [PalrButton {:type "submit" :class "flex-auto mt1"} "Sign In"]]])))
 
 (defn LandingPage []
   [:div.flex.flex-column
@@ -66,7 +68,7 @@
        [:input.input.mb1 (sync location {:type "text" :placeholder "Location"})]
        [:div.flex.relative
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
-        [PalrButton {:type "submit" :class "flex-auto"} "Sign Up"]]])))
+        [PalrButton {:type "submit" :class "flex-auto mt1"} "Sign Up"]]])))
 
 (defn PalrBackground [url]
   [snow-canvas {:width  (.-innerWidth js/window)
@@ -85,13 +87,13 @@
 
 (def avatar "http://placehold.it/40x40")
 
-(defn ConversationCard [id name date]
-  [:div.flex.btn.p0.regular.p-hover-bg-gray {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" id)])}
+(defn ConversationCard [conversation-data-id name date]
+  [:div.flex.btn.p0.regular.p-hover-bg-gray {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
    [Avatar avatar]
    [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
     [:div.flex.justify-between
      [:span.h4 {:style {:color (colors 4)}} name]
-     [:span.gray date]]]])
+     [:span.gray (str (ctc/from-now (ctf/parse date)))]]]])
 
 (defn ConversationHeader [name]
   [:div.flex.bg-darken-1
@@ -99,8 +101,47 @@
    [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
     [:span.h3 {:style {:color (colors 4)}} name]]])
 
-(defn Conversation [{:keys [id] {:keys [name]} :pal }]
-  [ConversationHeader name])
+
+(defn ScrollDiv [& attrs]
+  (let [node                 (reagent/atom nil)
+        should-scroll-bottom (atom false)]
+    (reagent/create-class
+     {:component-did-mount
+      (fn [this]
+        (reset! node (reagent/dom-node this)))
+
+      :component-will-update
+      (fn [this]
+        (when-let [el @node]
+          (reset! should-scroll-bottom (= (+ (.-scrollTop el) (.-offsetHeight el)) (.-scrollHeight el)))))
+
+      :component-did-update
+      (fn [this]
+        (when-let [el @node]
+          (when @should-scroll-bottom
+            (aset el "scrollTop" (.-scrollHeight el)))))
+
+      :reagent-render
+      (fn [& attrs]
+        (into [:div] attrs))})))
+
+(defn MessageBox [messages]
+  [ScrollDiv {:class "flex-auto overflow-scroll py2"}
+   (for [message (reverse messages)]
+     ^{:key message} [:div
+                      [:span.bold.mr1 (-> message :createdBy :name)]
+                      (:content message)])])
+
+(defn Conversation [convo messages]
+  (let [content (reagent/atom "")]
+    (fn [convo messages]
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:save-message-flow (atom (:conversationDataId convo)) content])
+                               :style {:height "100%"}}
+       [ConversationHeader (-> convo :pal :name)]
+       [MessageBox messages]
+       [:div.flex.items-center.bg-darken-1.p1y
+        [:input.flex-auto.input.m0.mr1 (sync content {:type "text" :rows 1 :placeholder "Write your letter"})]
+        [PalrButton {:type "submit"} "Send"]]])))
 
 (defn filter-one [func coll]
   (-> (filter func coll) first))
@@ -112,30 +153,32 @@
          attrs)])
 
 (defn ConversationsPage [router-params]
-  (let [conversations (re-frame/subscribe [:conversations])]
+  (let [conversations (re-frame/subscribe [:conversations])
+        messages (re-frame/subscribe [:messages])]
     (fn [router-params]
       [PalrContainer
        [:div.flex.clearfix {:style {:height "100%"}}
         [:div.col-4.m0.overflow-scroll
-         [:h2.h2.center.px2 "Pals"]
-         (for [{id :id {name :name} :pal} @conversations]
-           ^{:key id} [ConversationCard id name])]
+         [:h2.h2.center.px2 "Conversations"]
+         (for [{conversation-data-id :conversationDataId date :lastMessageDate {name :name} :pal} @conversations]
+           ^{:key conversation-data-id} [ConversationCard conversation-data-id name date])]
         [:div.col-8
          [:div.overflow-scroll.p2.bg-white {:style {:height "100%"}}
           (if-let [id (:id router-params)]
-            [Conversation (filter-one #(= (:id %) id) @conversations)]
+            (let [convo (filter-one #(= (:conversationDataId %) id) @conversations)
+                  convo-messages (get @messages (:conversationDataId convo) [])]
+              [Conversation convo convo-messages])
             [:div.flex.justify-center.items-center {:style {:height "100%"}} "Please pick a pal!"])]]]])))
 
 (defn MatchMe []
   [PalrContainer
    [:div.flex.justify-center {:style {:width "100%" :height "100%"}}
     [:div.flex.flex-column.justify-center {:style {:width "20rem"}}
-     [PalrButton {:on-click #(re-frame/dispatch [:request-pal "LEARN"])} "Learn"]
-     [PalrButton {:on-click #(re-frame/dispatch [:request-pal "TALK"])} "Talk"]
+     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal "LEARN"])} "Learn"]
+     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal "TALK"])} "Talk"]
      [PalrButton {:on-click #(re-frame/dispatch [:request-pal "LISTEN"])} "Listen"]]]])
 
 ;; main
-
 (derive ::landing ::front-page)
 (derive ::login ::front-page)
 (derive ::register ::front-page)

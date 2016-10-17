@@ -21,3 +21,8 @@
  :conversations
  (fn [db _]
    (:conversations db)))
+
+(re-frame/reg-sub
+ :messages
+ (fn [db _]
+   (:messages db)))
