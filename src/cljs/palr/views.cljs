@@ -210,6 +210,9 @@
 
 (defn main-panel []
   (let [active-panel (re-frame/subscribe [:active-panel])
-        router-params (re-frame/subscribe [:router-params])]
+        router-params (re-frame/subscribe [:router-params])
+        progress (re-frame/subscribe [:progress])]
     (fn []
-      [panels @active-panel @router-params])))
+      [:div
+       [progress-bar #js {:percent @progress}]
+       [panels @active-panel @router-params]])))
