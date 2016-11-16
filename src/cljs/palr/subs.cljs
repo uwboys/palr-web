@@ -26,3 +26,8 @@
  :messages
  (fn [db _]
    (:messages db)))
+
+(re-frame/reg-sub
+ :progress
+ (fn [db _]
+   (:progress db)))
