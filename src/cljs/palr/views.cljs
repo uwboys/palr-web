@@ -1,7 +1,8 @@
 (ns palr.views
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
-            [palr.components :refer [snow-canvas]]
+            [palr.components.common :refer [PalrBackground]]
+            [palr.components.ui :refer [ScrollDiv]]
             [palr.util]
             [cljs-time.format :as ctf]
             [cljs-time.core :as ctc]
@@ -71,18 +72,6 @@
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
         [PalrButton {:type "submit" :class "flex-auto mt1"} "Sign Up"]]])))
 
-(defn PalrBackground [url]
-  [snow-canvas {:width  (.-innerWidth js/window)
-                :height (.-innerHeight js/window)
-                :style  {:background-image (str "url(" url ")")
-                         :background-position "center center"
-                         :background-size "cover"
-                         :position "fixed"
-                         :width "100vw"
-                         :height "100vh"
-                         :top 0
-                         :z-index -1}}])
-
 (defn Avatar [url]
   [:img.circle.my1.mx2 {:src url}])
 
@@ -101,30 +90,6 @@
    [Avatar avatar]
    [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
     [:span.h3 {:style {:color (colors 4)}} name]]])
-
-
-(defn ScrollDiv [& attrs]
-  (let [node                 (reagent/atom nil)
-        should-scroll-bottom (atom false)]
-    (reagent/create-class
-     {:component-did-mount
-      (fn [this]
-        (reset! node (reagent/dom-node this)))
-
-      :component-will-update
-      (fn [this]
-        (when-let [el @node]
-          (reset! should-scroll-bottom (= (+ (.-scrollTop el) (.-offsetHeight el)) (.-scrollHeight el)))))
-
-      :component-did-update
-      (fn [this]
-        (when-let [el @node]
-          (when @should-scroll-bottom
-            (aset el "scrollTop" (.-scrollHeight el)))))
-
-      :reagent-render
-      (fn [& attrs]
-        (into [:div] attrs))})))
 
 (defn MessageBox [messages]
   [ScrollDiv {:class "flex-auto overflow-scroll py2"}
