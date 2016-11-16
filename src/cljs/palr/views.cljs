@@ -4,7 +4,8 @@
             [palr.components :refer [snow-canvas]]
             [palr.util]
             [cljs-time.format :as ctf]
-            [cljs-time.core :as ctc]))
+            [cljs-time.core :as ctc]
+            [react-progress-bar-plus]))
 
 (def ^:const colors
   ["#EAEFBD" "#C9E3AC" "#90BE6D" "#EA9010" "#37371F"])
@@ -177,6 +178,10 @@
      [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal "LEARN"])} "Learn"]
      [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal "TALK"])} "Talk"]
      [PalrButton {:on-click #(re-frame/dispatch [:request-pal "LISTEN"])} "Listen"]]]])
+
+(defn progress-bar []
+  (fn [props]
+    (.createElement js/React js/ReactProgressBarPlus props)))
 
 ;; main
 (derive ::landing ::front-page)
