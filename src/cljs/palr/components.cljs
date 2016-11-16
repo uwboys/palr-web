@@ -1,17 +1,13 @@
 (ns palr.components
-  (:require [reagent.core :as reagent]))
-
-(defn random!
-  ([] (.random js/Math))
-  ([n] (* (random!) n))
-  ([a b] (+ (random! (- b a)) a)))
+  (:require [reagent.core :as reagent]
+            [palr.util :as util]))
 
 (defn create-particles! [[W H] n]
   (for [_ (range n)]
-    {:x (random! W)
-     :y (random! H)
-     :r (random! 1 5)
-     :d (random! n)}))
+    {:x (util/random! W)
+     :y (util/random! H)
+     :r (util/random! 1 5)
+     :d (util/random! n)}))
 
 (defn sin [x]
   (.sin js/Math x))
@@ -38,10 +34,10 @@
            y (+ dy (:y p))]
        (if (or (< x -5) (< (+ 5 W) x) (< H y))
          (if (pos? (mod i 3))
-           (assoc p :x (random! W) :y -10)
+           (assoc p :x (util/random! W) :y -10)
            (if (pos? (sin angle))
-             (assoc p :x -5 :y (random! H))
-             (assoc p :x (+ 5 W) :y (random! H))
+             (assoc p :x -5 :y (util/random! H))
+             (assoc p :x (+ 5 W) :y (util/random! H))
              ))
          (assoc p :x x :y y))))
    particles))

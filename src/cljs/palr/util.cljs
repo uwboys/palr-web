@@ -35,3 +35,8 @@
   (let [dest-class (str (:class dest) " " (:class source))]
     (-> (merge-with attr-into dest source)
         (assoc :class dest-class))))
+
+(defn random!
+  ([] (.random js/Math))
+  ([n] (* (random!) n))
+  ([a b] (+ (random! (- b a)) a)))
