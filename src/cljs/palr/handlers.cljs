@@ -76,7 +76,8 @@
 (reg-fx
  :login
  (fn [ctx [email password]]
-   {:http-xhrio {:method          :post
+   {:dispatch   [:set-progress    25]
+    :http-xhrio {:method          :post
                  :uri             (palr.util/api "/login")
                  :timeout         8000
                  :params          {:email email :password password}
@@ -85,23 +86,25 @@
                  :on-success      [:login-success]
                  :on-failure      [:login-failure]}}))
 
-(reg-db
+(reg-fx
  :login-success
- (fn [db [{:keys [accessToken]}]]
-   (assoc-in db [:session :access-token] accessToken)))
+ (fn [{:keys [db]} [{:keys [accessToken]}]]
+   {:dispatch [:set-progress 100]
+    :db (assoc-in db [:session :access-token] accessToken)}))
 
-(reg-db
+(reg-fx
  :login-failure
- (fn [db event]
+ (fn [_ event]
    (println "Login failure" event)
-   db))
+   {:dispatch [:set-progress 100]}))
 
 ;; Register
 
 (reg-fx
  :register
  (fn [ctx [name email password location]]
-   {:http-xhrio {:method          :post
+   {:dispatch   [:set-progress    25]
+    :http-xhrio {:method          :post
                  :uri             (palr.util/api "/register")
                  :timeout         8000
                  :params          {:name name :email email :password password :location location}
@@ -110,17 +113,18 @@
                  :on-success      [:register-success]
                  :on-failure      [:register-failure]}}))
 
-(reg-db
+(reg-fx
  :register-success
- (fn [db [{:keys [accessToken]}]]
-   (assoc-in db [:session :access-token] accessToken)))
+ (fn [{:keys [db]} [{:keys [accessToken]}]]
+   {:dispatch [:set-progress 100]
+    :db (assoc-in db [:session :access-token] accessToken)}))
 
-
-(reg-db
+(reg-fx
  :register-failure
- (fn [db event]
+ (fn [_ event]
    (println "Register failure" event)
-   db))
+   (.alert js/window "Registration failure")
+   {:dispatch [:set-progress 100]}))
 
 ;; Fetch Conversations
 
@@ -128,7 +132,8 @@
  :fetch-conversations
  (fn [{db :db} _]
    (let [access-token (-> db :session :access-token)]
-     {:http-xhrio {:method          :get
+     {:dispatch   [:set-progress    25]
+      :http-xhrio {:method          :get
                    :uri             (palr.util/api "/conversations")
                    :timeout         8000
                    :headers         {:authorization access-token}
@@ -136,16 +141,17 @@
                    :on-success      [:fetch-conversations-success]
                    :on-failure      [:fetch-conversations-failure]}})))
 
-(reg-db
+(reg-fx
  :fetch-conversations-success
- (fn [db [conversations]]
-   (assoc db :conversations conversations)))
+ (fn [{:keys [db]} [conversations]]
+   {:dispatch [:set-progress 100]
+    :db (assoc db :conversations conversations)}))
 
-(reg-db
+(reg-fx
  :fetch-conversations-failure
- (fn [db event]
+ (fn [_ event]
    (println "Failed to fetch conversations" event)
-   db))
+   {:dispatch [:set-progress 100]}))
 
 ;;
 
@@ -160,7 +166,8 @@
  :request-pal
  (fn [{:keys [db]} [type]]
    (let [access-token (-> db :session :access-token)]
-     {:http-xhrio {:method          :post
+     {:dispatch   [:set-progress    25]
+      :http-xhrio {:method          :post
                    :uri             (palr.util/api "/match")
                    :params          {:type type}
                    :timeout         8000
@@ -170,17 +177,17 @@
                    :on-success      [:request-pal-success]
                    :on-failure      [:request-pal-failure]}})))
 
-(reg-db
+(reg-fx
  :request-pal-success
- (fn [db event]
+ (fn [_ event]
    (println event)
-   db))
+   {:dispatch [:set-progress 100]}))
 
-(reg-db
+(reg-fx
  :request-pal-failure
- (fn [db event]
+ (fn [_ event]
    (println event)
-   db))
+   {:dispatch [:set-progress 100]}))
 
 
 ;; fetch messages
@@ -189,7 +196,8 @@
  :fetch-messages
  (fn [{:keys [db]} [conversation-data-id]]
    (let [access-token (-> db :session :access-token)]
-     {:http-xhrio {:method          :get
+     {:dispatch   [:set-progress    25]
+      :http-xhrio {:method          :get
                    :uri             (palr.util/api "/messages")
                    :params          {:conversationDataId conversation-data-id}
                    :timeout         8000
@@ -198,19 +206,20 @@
                    :on-success      [:fetch-messages-success]
                    :on-failure      [:fetch-messages-failure]}})))
 
-(reg-db
+(reg-fx
  :fetch-messages-success
- (fn [db [messages]]
-   (if (empty? messages)
-     db
-     (let [id (-> messages first :conversationDataId)]
-       (assoc-in db [:messages id] messages)))))
+ (fn [{:keys [db]} [messages]]
+   {:dispatch [:set-progress 100]
+    :db (if (empty? messages)
+          db
+          (let [id (-> messages first :conversationDataId)]
+            (assoc-in db [:messages id] messages)))}))
 
-(reg-db
+(reg-fx
  :fetch-messages-failure
- (fn [db event]
+ (fn [_ event]
    (println event)
-   db))
+   {:dispatch [:set-progress 100]}))
 
 ;; save message flow
 
@@ -227,7 +236,8 @@
  (fn [{:keys [db]} [conversation-data-id content]]
    (let [access-token (-> db :session :access-token)]
      (println conversation-data-id content)
-     {:http-xhrio {:method          :post
+     {:dispatch   [:set-progress    25]
+      :http-xhrio {:method          :post
                    :uri             (palr.util/api "/messages")
                    :params          {:conversationDataId conversation-data-id :content content}
                    :timeout         8000
@@ -237,14 +247,22 @@
                    :on-success      [:save-message-success]
                    :on-failure      [:save-message-failure]}})))
 
-(reg-db
+(reg-fx
  :save-message-success
- (fn [db event]
+ (fn [_ event]
    (println event)
-   db))
+   {:dispatch [:set-progress 100]}))
+
+(reg-fx
+ :save-message-failure
+ (fn [_ event]
+   (println event)
+   {:dispatch [:set-progress 100]}))
+
+;; progress bar
 
 (reg-db
- :save-message-failure
- (fn [db event]
-   (println event)
-   db))
+ :set-progress
+ (fn [db [progress]]
+   (println "Setting progress! " progress)
+   (assoc db :progress progress)))
