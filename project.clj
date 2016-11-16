@@ -24,7 +24,8 @@
                        [postcss-cli "^2.6.0"]
                        [postcss-cssnext "^2.8.0"]
                        [postcss-import "^8.1.2"]
-                       [basscss-color-forms "^3.0.2"]]
+                       [basscss-color-forms "^3.0.2"]
+                       [react-progress-bar-plus "^1.2.0"]]
         :package {:scripts {:postcss "postcss -c postcss.config.json -o resources/public/css/site.css ./styles/index.css"
                             :postcss:watch "npm run postcss -- --watch"}}}
 
@@ -59,6 +60,8 @@
                     :output-to            "resources/public/js/compiled/app.js"
                     :output-dir           "resources/public/js/compiled/out"
                     :asset-path           "js/compiled/out"
+                    :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
+                                       :provides ["react-progress-bar-plus"]}]
                     :source-map-timestamp true}}
 
     {:id           "min"
@@ -66,6 +69,8 @@
      :compiler     {:main            palr.core
                     :output-to       "resources/public/js/compiled/app.js"
                     :optimizations   :advanced
+                    :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
+                                       :provides ["react-progress-bar-plus"]}]
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
     {:id           "test"
