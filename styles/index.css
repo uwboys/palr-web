@@ -33,6 +33,10 @@
 /** React progress bar **/
 @import 'react-progress-bar-plus/dist/progress-bar';
 
+/** Alertify **/
+@import 'alertify/themes/alertify.core';
+@import 'alertify/themes/alertify.default';
+
 .react-progress-bar-percent {
     transition: all 400ms ease;
 }

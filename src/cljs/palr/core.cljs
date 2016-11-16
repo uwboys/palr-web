@@ -6,7 +6,8 @@
               [palr.subs]
               [palr.routes :as routes]
               [palr.views :as views]
-              [palr.config :as config]))
+              [palr.config :as config]
+              [alertify]))
 
 
 (defn dev-setup []

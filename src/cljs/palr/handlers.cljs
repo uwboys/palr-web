@@ -96,6 +96,7 @@
  :login-failure
  (fn [_ event]
    (println "Login failure" event)
+   (.error js/alertify "Login failure")
    {:dispatch [:set-progress 100]}))
 
 ;; Register
@@ -121,9 +122,8 @@
 
 (reg-fx
  :register-failure
- (fn [_ event]
-   (println "Register failure" event)
-   (.alert js/window "Registration failure")
+ (fn [_ [{:keys [response]}]]
+   (.error js/alertify (:message response))
    {:dispatch [:set-progress 100]}))
 
 ;; Fetch Conversations
@@ -151,6 +151,7 @@
  :fetch-conversations-failure
  (fn [_ event]
    (println "Failed to fetch conversations" event)
+   (.error js/alertify "Failed to fetch conversations")
    {:dispatch [:set-progress 100]}))
 
 ;;
@@ -187,6 +188,7 @@
  :request-pal-failure
  (fn [_ event]
    (println event)
+   (.error js/alertify "Failed to request a pal")
    {:dispatch [:set-progress 100]}))
 
 
@@ -219,6 +221,7 @@
  :fetch-messages-failure
  (fn [_ event]
    (println event)
+   (.error js/alertify "Failed to fetch messages")
    {:dispatch [:set-progress 100]}))
 
 ;; save message flow

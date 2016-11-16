@@ -25,7 +25,8 @@
                        [postcss-cssnext "^2.8.0"]
                        [postcss-import "^8.1.2"]
                        [basscss-color-forms "^3.0.2"]
-                       [react-progress-bar-plus "^1.2.0"]]
+                       [react-progress-bar-plus "^1.2.0"]
+                       [alertify "0.3.0"]]
         :package {:scripts {:postcss "postcss -c postcss.config.json -o resources/public/css/site.css ./styles/index.css"
                             :postcss:watch "npm run postcss -- --watch"}}}
 
@@ -61,7 +62,9 @@
                     :output-dir           "resources/public/js/compiled/out"
                     :asset-path           "js/compiled/out"
                     :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
-                                       :provides ["react-progress-bar-plus"]}]
+                                       :provides ["react-progress-bar-plus"]}
+                                      {:file "node_modules/alertify/lib/alertify.js"
+                                       :provides ["alertify"]}]
                     :source-map-timestamp true}}
 
     {:id           "min"
@@ -70,7 +73,9 @@
                     :output-to       "resources/public/js/compiled/app.js"
                     :optimizations   :advanced
                     :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
-                                       :provides ["react-progress-bar-plus"]}]
+                                       :provides ["react-progress-bar-plus"]}
+                                      {:file "node_modules/alertify/lib/alertify.js"
+                                       :provides ["alertify"]}]
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
     {:id           "test"
