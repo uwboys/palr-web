@@ -24,10 +24,12 @@
    common-interceptors
    func))
 
-(reg-db
- :initialize-db
- (fn  [_ _]
-   db/default-db))
+(reg-fx
+ :init
+ (fn [_ _]
+   (let [signed-in? (-> db/default-db :session :access-token nil? not)]
+     {:db db/default-db
+      :dispatch-n (if signed-in? [[:connect-sio] [:fetch-user]] [])}))) ;; Redirect the user to the appropriate page
 
 (reg-db
  :set-active-panel
@@ -54,8 +56,8 @@
 
 (defn auth-flow [first-dispatch success-action]
   {:first-dispatch first-dispatch
-   :rules [{:when :seen? :events [success-action] :dispatch [:fetch-conversations]}
-           {:when :seen? :events [:fetch-conversations-success] :dispatch [:auth-flow-success] :halt? true}]})
+   :rules [{:when :seen? :events [success-action] :dispatch-n [[:connect-sio] [:fetch-user]]}
+           {:when :seen? :events :fetch-user-success :dispatch [:auth-flow-success] :halt? true}]})
 
 (reg-fx
  :login-flow
@@ -71,6 +73,34 @@
  :auth-flow-success
  (fn [_ _]
    {:dispatch [:change-route "/pals"]}))
+
+;; Fetch logged in user
+
+(reg-fx
+ :fetch-user
+ (fn [{db :db} _]
+   (let [access-token (-> db :session :access-token)]
+     {:dispatch   [:set-progress    25]
+      :http-xhrio {:method          :get
+                   :uri             (palr.util/api "/users/me")
+                   :timeout         8000
+                   :headers         {:authorization access-token}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:fetch-user-success]
+                   :on-failure      [:fetch-user-failure]}})))
+
+(reg-fx
+ :fetch-user-success
+ (fn [{:keys [db]} [user]]
+   {:dispatch [:set-progress 100]
+    :db (update db :session #(merge user %))}))
+
+(reg-fx
+ :fetch-user-failure
+ (fn [_ event]
+   (println "Failed to fetch user" event)
+   (.error js/alertify "Failed to fetch user")
+   {:dispatch [:set-progress 100]}))
 
 ;; Login
 

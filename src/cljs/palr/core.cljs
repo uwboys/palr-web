@@ -1,14 +1,14 @@
 (ns palr.core
-    (:require [reagent.core :as reagent]
-              [re-frame.core :as re-frame]
-              [devtools.core :as devtools]
-              [palr.handlers]
-              [palr.subs]
-              [palr.routes :as routes]
-              [palr.views :as views]
-              [palr.config :as config]
-              [alertify]))
-
+  (:require [reagent.core :as reagent]
+            [re-frame.core :as re-frame]
+            [devtools.core :as devtools]
+            [palr.handlers]
+            [palr.subs]
+            [palr.routes :as routes]
+            [palr.views :as views]
+            [palr.config :as config]
+            [palr.ws :as ws]
+            [alertify]))
 
 (defn dev-setup []
   (when config/debug?
@@ -22,6 +22,6 @@
 
 (defn ^:export init []
   (routes/app-routes)
-  (re-frame/dispatch-sync [:initialize-db])
+  (re-frame/dispatch-sync [:init])
   (dev-setup)
   (mount-root))
