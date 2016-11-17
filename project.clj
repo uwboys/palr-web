@@ -26,7 +26,8 @@
                        [postcss-import "^8.1.2"]
                        [basscss-color-forms "^3.0.2"]
                        [react-progress-bar-plus "^1.2.0"]
-                       [alertify "0.3.0"]]
+                       [alertify "^0.3.0"]
+                       [socket.io-client "^1.5.1"]]
         :package {:scripts {:postcss "postcss -c postcss.config.json -o resources/public/css/site.css ./styles/index.css"
                             :postcss:watch "npm run postcss -- --watch"}}}
 
@@ -64,7 +65,9 @@
                     :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
                                        :provides ["react-progress-bar-plus"]}
                                       {:file "node_modules/alertify/lib/alertify.js"
-                                       :provides ["alertify"]}]
+                                       :provides ["alertify"]}
+                                      {:file "node_modules/socket.io-client/socket.io.js"
+                                       :provides ["socket.io-client"]}]
                     :source-map-timestamp true}}
 
     {:id           "min"
@@ -75,7 +78,9 @@
                     :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
                                        :provides ["react-progress-bar-plus"]}
                                       {:file "node_modules/alertify/lib/alertify.js"
-                                       :provides ["alertify"]}]
+                                       :provides ["alertify"]}
+                                      {:file "node_modules/socket.io-client/socket.io.js"
+                                       :provides ["socket.io-client"]}]
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
     {:id           "test"
