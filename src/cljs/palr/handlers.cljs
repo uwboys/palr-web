@@ -6,7 +6,8 @@
             [day8.re-frame.http-fx]
             [day8.re-frame.async-flow-fx]
             [palr.middleware :as palr.mw]
-            [palr.util]))
+            [palr.util]
+            [palr.ws :as ws]))
 
 (def common-interceptors [palr.middleware/persist-session!
                           re-frame/trim-v])
@@ -269,3 +270,11 @@
  (fn [db [progress]]
    (println "Setting progress! " progress)
    (assoc db :progress progress)))
+
+;; connect to socket io server
+
+(reg-db
+ :connect-sio
+ (fn [db _]
+   (ws/start-client! db)
+   db))
