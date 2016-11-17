@@ -6,6 +6,8 @@
    :session (or (palr.util/fetch-session-from-storage!) {})
    :conversations []
    :messages {}
-   :matched? false
+   :inMatchProcess false
+   :isTemporarilyMatched false
+   :isPemanentlyMatched false
    :router-params {}
    :progress 100})
