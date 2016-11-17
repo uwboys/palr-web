@@ -25,35 +25,44 @@
 
 (def signed-in? (complement signed-out?))
 
+(defn temporarily-matched? [db]
+  (-> db :session :isTemporarilyMatched boolean))
+
+(defn permanently-matched? [db]
+  (-> db :session :isPermanentlyMatched boolean))
+
+(defn in-matching-process? [db]
+  (-> db :session :inMatchingProcess boolean))
+
+(def matched? (some-fn temporarily-matched? permanently-matched?))
+(def not-matched? (complement matched?))
+
 (defn app-routes []
   (secretary/set-config! :prefix "#")
   ;; --------------------
   ;; define routes here
   (defroute "/" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] :palr.views/landing])
+    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] [] :palr.views/landing])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/login" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] :palr.views/login])
+    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] [] :palr.views/login])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/register" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] :palr.views/register])
+    (re-frame/dispatch [:cond-sap [signed-in? "/conversations"] [] :palr.views/register])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/match-me" {:as params}
-    (re-frame/dispatch [:cond-sap [signed-out? "/"] :palr.views/match-me])
+    (re-frame/dispatch [:cond-sap [temporarily-matched? "/conversations" signed-out? "/"] [] :palr.views/match-me])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/conversations/:id" {:as params}
-    (re-frame/dispatch [:fetch-conversations])
-    (re-frame/dispatch [:fetch-messages (:id params)])
-    (re-frame/dispatch [:cond-sap [signed-out? "/"] :palr.views/conversations])
+    (re-frame/dispatch [:cond-sap [not-matched? "/match-me" signed-out? "/"] [[:fetch-conversations] [:fetch-messages (:id params)]] :palr.views/conversations])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "/conversations" {:as params}
-    (re-frame/dispatch [:fetch-conversations])
-    (re-frame/dispatch [:cond-sap [signed-out? "/"] :palr.views/conversations])
+    (re-frame/dispatch [:cond-sap [not-matched? "/match-me" signed-out? "/"] [[:fetch-conversations]] :palr.views/conversations])
     (re-frame/dispatch [:reset-router-params params]))
 
   (defroute "*" {:as params}

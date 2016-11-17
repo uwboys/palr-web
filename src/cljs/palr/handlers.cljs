@@ -38,14 +38,14 @@
 
 (reg-fx
  :cond-sap
- (fn [{:keys [db]} [redirects panel]]
-   {:dispatch
+ (fn [{:keys [db]} [redirects dispatches panel]]
+   {:dispatch-n
     (loop [redirects' (partition 2 redirects)]
       (if-let [[[func redirect] & others] redirects']
         (if (func db)
-          [:change-route redirect]
+          [[:change-route redirect]]
           (recur others))
-        [:set-active-panel panel]))}))
+        (conj dispatches [:set-active-panel panel])))}))
 
 (reg-db
  :change-route
