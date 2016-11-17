@@ -74,6 +74,12 @@
  (fn [_ _]
    {:dispatch [:change-route "/pals"]}))
 
+(reg-fx
+ :request-pal-flow
+ (fn [_ [type]]
+   {:async-flow {:first-dispatch [:request-pal type]
+                 :rules [{:when :seen? :events :request-pal-success :dispatch [:change-route "/conversations"]}]}}))
+
 ;; Fetch logged in user
 
 (reg-fx
@@ -185,7 +191,7 @@
    (.error js/alertify "Failed to fetch conversations")
    {:dispatch [:set-progress 100]}))
 
-;;
+;; Reset router params
 
 (reg-db
  :reset-router-params
@@ -211,9 +217,9 @@
 
 (reg-fx
  :request-pal-success
- (fn [_ event]
-   (println event)
-   {:dispatch [:set-progress 100]}))
+ (fn [{:keys [db]} [response]]
+   {:db (update db :session #(merge % response))
+    :dispatch [:set-progress 100]}))
 
 (reg-fx
  :request-pal-failure

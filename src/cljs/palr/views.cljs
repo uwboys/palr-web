@@ -140,9 +140,9 @@
   [PalrContainer
    [:div.flex.justify-center {:style {:width "100%" :height "100%"}}
     [:div.flex.flex-column.justify-center {:style {:width "20rem"}}
-     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal "LEARN"])} "Learn"]
-     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal "TALK"])} "Talk"]
-     [PalrButton {:on-click #(re-frame/dispatch [:request-pal "LISTEN"])} "Listen"]]]])
+     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal-flow "LEARN"])} "Learn"]
+     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal-flow "TALK"])} "Talk"]
+     [PalrButton {:on-click #(re-frame/dispatch [:request-pal-flow "LISTEN"])} "Listen"]]]])
 
 (defn progress-bar []
   (fn [props]
