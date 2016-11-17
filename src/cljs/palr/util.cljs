@@ -25,7 +25,7 @@
   ([location v] (aset location "hash" v)))
 
 (defn api [uri]
-  (let [base-url "http://palrserver.azurewebsites.net/"]
+  (let [base-url pc/api]
     (str base-url uri)))
 
 (defn attr-into [d s]
