@@ -96,3 +96,8 @@
       :reagent-render
       (fn [& attrs]
         (into [:div] attrs))})))
+
+(defn Avatar [name]
+  (let [size "50px"]
+    [:div.circle.bg-gray.center.h1.white.my1.mx2.p-no-select {:style {:width size :height size :line-height size}}
+      (.toUpperCase (first name))]))

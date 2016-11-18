@@ -2,7 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
             [palr.components.common :refer [PalrBackground]]
-            [palr.components.ui :refer [ScrollDiv]]
+            [palr.components.ui :refer [ScrollDiv Avatar]]
             [palr.util]
             [cljs-time.format :as ctf]
             [cljs-time.core :as ctc]
@@ -73,14 +73,11 @@
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
         [PalrButton {:type "submit" :class "flex-auto mt1"} "Sign Up"]]])))
 
-(defn Avatar [url]
-  [:img.circle.my1.mx2 {:src url}])
-
 (def avatar "http://placehold.it/40x40")
 
 (defn ConversationCard [conversation-data-id name message]
   [:div.flex.btn.p0.regular.p-hover-bg-gray.items-center {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
-   [Avatar avatar]
+   [Avatar name]
    [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
     [:div.flex.justify-between
      [:span.h4.mb1 {:style {:color (colors 4)}} name]
@@ -89,7 +86,7 @@
 
 (defn ConversationHeader [name]
   [:div.flex.bg-darken-1.p-no-shrink
-   [Avatar avatar]
+   [Avatar name]
    [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
     [:span.h3 {:style {:color (colors 4)}} name]]])
 

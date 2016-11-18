@@ -52,3 +52,7 @@
 .p-no-shrink {
     flex-shrink: 0;
 }
+
+.p-no-select {
+    user-select: none;
+}
