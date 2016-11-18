@@ -6,7 +6,8 @@
             [palr.util]
             [cljs-time.format :as ctf]
             [cljs-time.core :as ctc]
-            [react-progress-bar-plus]))
+            [react-progress-bar-plus]
+            [clojure.string]))
 
 (def ^:const colors
   ["#EAEFBD" "#C9E3AC" "#90BE6D" "#EA9010" "#37371F"])
@@ -77,23 +78,24 @@
 
 (def avatar "http://placehold.it/40x40")
 
-(defn ConversationCard [conversation-data-id name date]
-  [:div.flex.btn.p0.regular.p-hover-bg-gray {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
+(defn ConversationCard [conversation-data-id name message]
+  [:div.flex.btn.p0.regular.p-hover-bg-gray.items-center {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
    [Avatar avatar]
    [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
     [:div.flex.justify-between
-     [:span.h4 {:style {:color (colors 4)}} name]
-     [:span.gray (str (ctc/from-now (ctf/parse date)))]]]])
+     [:span.h4.mb1 {:style {:color (colors 4)}} name]
+     [:span.h5.gray (when (:createdAt message) (palr.util/get-date (:createdAt message)))]]
+    [:div.h5.gray.truncate (:content message)]]])
 
 (defn ConversationHeader [name]
-  [:div.flex.bg-darken-1
+  [:div.flex.bg-darken-1.p-no-shrink
    [Avatar avatar]
    [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
     [:span.h3 {:style {:color (colors 4)}} name]]])
 
 (defn MessageBox [messages]
-  [ScrollDiv {:class "flex-auto overflow-scroll py2"}
-   (for [message (reverse messages)]
+  [ScrollDiv {:class "flex-auto overflow-scroll my2"}
+   (for [message messages]
      ^{:key message} [:div
                       [:span.bold.mr1 (-> message :createdBy :name)]
                       (:content message)])])
@@ -101,11 +103,11 @@
 (defn Conversation [convo messages]
   (let [content (reagent/atom "")]
     (fn [convo messages]
-      [:form.flex.flex-column {:on-submit (dispatch-submit [:save-message-flow (atom (:conversationDataId convo)) content])
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:send-message (atom (:conversationDataId convo)) content])
                                :style {:height "100%"}}
        [ConversationHeader (-> convo :pal :name)]
        [MessageBox messages]
-       [:div.flex.items-center.bg-darken-1.p1y
+       [:div.flex.items-center.bg-darken-1.p1y.p-no-shrink
         [:input.flex-auto.input.m0.mr1 (sync content {:type "text" :rows 1 :placeholder "Write your letter"})]
         [PalrButton {:type "submit"} "Send"]]])))
 
@@ -127,7 +129,7 @@
         [:div.col-4.m0.overflow-scroll
          [:h2.h2.center.px2 "Conversations"]
          (for [{conversation-data-id :conversationDataId date :lastMessageDate {name :name} :pal} @conversations]
-           ^{:key conversation-data-id} [ConversationCard conversation-data-id name date])]
+           ^{:key conversation-data-id} [ConversationCard conversation-data-id name (last (get @messages conversation-data-id []))])]
         [:div.col-8
          [:div.overflow-scroll.p2.bg-white {:style {:height "100%"}}
           (if-let [id (:id router-params)]

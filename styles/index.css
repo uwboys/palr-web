@@ -48,3 +48,7 @@
 .p-border-bottom {
     border-bottom: 1px solid #e9ebeb;
 }
+
+.p-no-shrink {
+    flex-shrink: 0;
+}

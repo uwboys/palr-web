@@ -7,7 +7,8 @@
             [day8.re-frame.async-flow-fx]
             [palr.middleware :as palr.mw]
             [palr.util]
-            [palr.ws :as ws]))
+            [palr.ws :as ws]
+            [cljs.pprint]))
 
 (def common-interceptors [palr.middleware/persist-session!
                           re-frame/trim-v])
@@ -99,7 +100,7 @@
  :fetch-user-success
  (fn [{:keys [db]} [user]]
    {:dispatch [:set-progress 100]
-    :db (update db :session #(merge user %))}))
+    :db (update db :session #(merge % user))}))
 
 (reg-fx
  :fetch-user-failure
@@ -251,8 +252,9 @@
    {:dispatch [:set-progress 100]
     :db (if (empty? messages)
           db
-          (let [id (-> messages first :conversationDataId)]
-            (assoc-in db [:messages id] messages)))}))
+          (let [id (-> messages first :conversationDataId)
+                ordered-messages (vec (sort-by #(-> % :createdAt js/Date. .getTime) messages))]
+            (assoc-in db [:messages id] ordered-messages)))}))
 
 (reg-fx
  :fetch-messages-failure
@@ -261,40 +263,36 @@
    (.error js/alertify "Failed to fetch messages")
    {:dispatch [:set-progress 100]}))
 
-;; save message flow
-
-(reg-fx
- :save-message-flow
- (fn [cfx [conversation-data-id content]]
-   {:async-flow {:first-dispatch [:save-message conversation-data-id content]
-                 :rules [{:when :seen? :events [:save-message-success] :dispatch [:fetch-messages conversation-data-id]}]}}))
+(reg-db
+ :save-message
+ (fn [db [message]]
+   (update-in db [:messages (:conversationDataId message)] conj message)))
 
 ;; save a message
 
 (reg-fx
- :save-message
+ :send-message
  (fn [{:keys [db]} [conversation-data-id content]]
-   (let [access-token (-> db :session :access-token)]
-     (println conversation-data-id content)
-     {:dispatch   [:set-progress    25]
+   (let [access-token (-> db :session :access-token)
+         message {:conversationDataId conversation-data-id :content content}]
+     {:dispatch-n [[:save-message   (assoc message :createdBy (:session db) :createdAt (-> (js/Date.) .toISOString))] [:set-progress    25]]
       :http-xhrio {:method          :post
                    :uri             (palr.util/api "/messages")
-                   :params          {:conversationDataId conversation-data-id :content content}
+                   :params          message
                    :timeout         8000
                    :headers         {:authorization access-token}
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [:save-message-success]
-                   :on-failure      [:save-message-failure]}})))
+                   :on-success      [:send-message-success]
+                   :on-failure      [:send-message-failure]}})))
 
 (reg-fx
- :save-message-success
+ :send-message-success
  (fn [_ event]
-   (println event)
    {:dispatch [:set-progress 100]}))
 
 (reg-fx
- :save-message-failure
+ :send-message-failure
  (fn [_ event]
    (println event)
    {:dispatch [:set-progress 100]}))

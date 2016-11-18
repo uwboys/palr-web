@@ -1,6 +1,8 @@
 (ns palr.ws
   (:require [socket.io-client]
-            [palr.constant :as pc]))
+            [palr.constant :as pc]
+            [re-frame.core :as re-frame]
+            [alertify]))
 
 (defonce socket (atom nil))
 
@@ -16,5 +18,6 @@
         not-connected? (nil? @socket)]
     (when (and signed-in? not-connected?)
       (reset! socket (.connect js/io (str pc/api "/ws")))
-      (emit! "token" access-token))))
-
+      (emit! "add_client" access-token)
+      (on! "message" #(re-frame/dispatch [:save-message (js->clj % :keywordize-keys true)]))
+      (on! "matched" #(.success js/alertify "You were matched")))))
