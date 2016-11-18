@@ -97,7 +97,27 @@
       (fn [& attrs]
         (into [:div] attrs))})))
 
-(defn Avatar [name]
-  (let [size "50px"]
-    [:div.circle.bg-gray.center.h1.white.my1.mx2.p-no-select {:style {:width size :height size :line-height size}}
-      (.toUpperCase (first name))]))
+(defn Avatar
+  ([name] (Avatar name :md))
+  ([name s]
+   (let [size ({:md "50px" :sm "40px" :lg "60px"} s)]
+     [:div.py1.px2
+      [:div.circle.bg-gray.center.h1.white.p-no-select {:style {:width size :height size :line-height size}}
+       (.toUpperCase (or (first name) ""))]])))
+
+;; Font-Awesome
+
+(defn Icon [{:keys [name class size rotate flip fixed-width spin pulse stack inverse component]
+             :or {component :i}
+             :as props}]
+  [component
+   (assoc props
+          :class (str "fa fa-" class " "
+                      (if size (str "fa-" size)) " "
+                      (if rotate (str "fa-rotate-" rotate)) " "
+                      (if flip (str "fa-flip-" flip)) " "
+                      (if fixed-width "fa-fw") " "
+                      (if spin "fa-spin") " "
+                      (if pulse "fa-pulse") " "
+                      (if stack (str "fa-stack-" stack)) " "
+                      (if inverse "fa-inverse")))])

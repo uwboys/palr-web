@@ -2,7 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
             [palr.components.common :refer [PalrBackground]]
-            [palr.components.ui :refer [ScrollDiv Avatar]]
+            [palr.components.ui :refer [ScrollDiv Avatar Icon]]
             [palr.util]
             [cljs-time.format :as ctf]
             [cljs-time.core :as ctc]
@@ -74,7 +74,7 @@
         [PalrButton {:type "submit" :class "flex-auto mt1"} "Sign Up"]]])))
 
 (defn ConversationCard [conversation-data-id name message]
-  [:div.flex.btn.p0.regular.p-hover-bg-gray.items-center {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
+  [:div.flex.btn.p0.regular.bg-white.p-hover-bg-gray.items-center {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
    [Avatar name]
    [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
     [:div.flex.justify-between
@@ -84,12 +84,12 @@
 
 (defn ConversationHeader [name]
   [:div.flex.bg-darken-1.p-no-shrink
-   [Avatar name]
+   [Avatar name :sm]
    [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
     [:span.h3 {:style {:color (colors 4)}} name]]])
 
 (defn MessageBox [messages]
-  [ScrollDiv {:class "flex-auto overflow-scroll my2"}
+  [ScrollDiv {:class "flex-auto overflow-scroll mb1"}
    (for [message messages]
      ^{:key message} [:div
                       [:span.bold.mr1 (-> message :createdBy :name)]
@@ -101,10 +101,11 @@
       [:form.flex.flex-column {:on-submit (dispatch-submit [:send-message (atom (:conversationDataId convo)) content])
                                :style {:height "100%"}}
        [ConversationHeader (-> convo :pal :name)]
-       [MessageBox messages]
-       [:div.flex.items-center.bg-darken-1.p1y.p-no-shrink
+       [:div.flex.flex-column.p1.flex-auto
+        [MessageBox messages]
+        [:div.flex.items-center.bg-darken-1.p1y.p-no-shrink
         [:input.flex-auto.input.m0.mr1 (sync content {:type "text" :rows 1 :placeholder "Write your letter"})]
-        [PalrButton {:type "submit"} "Send"]]])))
+         [PalrButton {:type "submit"} "Send"]]]])))
 
 (defn filter-one [func coll]
   (-> (filter func coll) first))
@@ -115,21 +116,33 @@
    (into [:div.rounded {:style {:width "90%" :height "90%" :background-color "rgba(255, 255, 255, 0.95)"}}]
          attrs)])
 
-(defn ConversationSidebar [conversations messages]
+(defn CircularButton [])
+
+(defn ConversationSidebar [profile-open? session conversations messages]
   [:div.col-4.m0.overflow-scroll
-   [:h2.h2.center.px2 "Conversations"]
-   (for [{conversation-data-id :conversationDataId date :lastMessageDate {name :name} :pal} conversations]
-     ^{:key conversation-data-id} [ConversationCard conversation-data-id name (last (get messages conversation-data-id []))])])
+   [:div.bg-darken-1.flex.items-center.justify-between
+    [Avatar (:name session) :sm]
+    [:button.btn.circle.p-focus-no-border.center.p-focus-no-shadow.p-transition-1.gray.p0 {:type "button"
+                                                                                 :class (if profile-open? "bg-darken-2" "")
+                                                                                 :on-click #(re-frame/dispatch [:toggle-profile-open?])
+                                                                                 :style {:width "30px" :height "30px" :line-height "30px"}}
+     [Icon {:class "user" :size 2}]]]
+   (if profile-open?
+     "Profile page!"
+     (for [{conversation-data-id :conversationDataId date :lastMessageDate {name :name} :pal} conversations]
+       ^{:key conversation-data-id} [ConversationCard conversation-data-id name (last (get messages conversation-data-id []))]))])
 
 (defn ConversationsPage [router-params]
-  (let [conversations (re-frame/subscribe [:conversations])
+  (let [profile-open? (re-frame/subscribe [:profile-open?])
+        session (re-frame/subscribe [:session])
+        conversations (re-frame/subscribe [:conversations])
         messages (re-frame/subscribe [:messages])]
     (fn [router-params]
       [PalrContainer
        [:div.flex.clearfix {:style {:height "100%"}}
-        [ConversationSidebar @conversations @messages]
+        [ConversationSidebar @profile-open? @session @conversations @messages]
         [:div.col-8
-         [:div.overflow-scroll.p2.bg-white {:style {:height "100%"}}
+         [:div.overflow-scroll.bg-white {:style {:height "100%"}}
           (if-let [id (:id router-params)]
             (let [convo (filter-one #(= (:conversationDataId %) id) @conversations)
                   convo-messages (get @messages (:conversationDataId convo) [])]

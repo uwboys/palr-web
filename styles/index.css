@@ -56,3 +56,15 @@
 .p-no-select {
     user-select: none;
 }
+
+.p-focus-no-border:focus {
+    border: none;
+}
+
+.p-focus-no-shadow:focus {
+    box-shadow: none;
+}
+
+.p-transition-1 {
+    transition: 1s;
+}

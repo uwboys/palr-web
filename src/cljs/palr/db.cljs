@@ -10,4 +10,5 @@
    :isTemporarilyMatched false
    :isPemanentlyMatched false
    :router-params {}
-   :progress 100})
+   :progress 100
+   :profile-open? false})

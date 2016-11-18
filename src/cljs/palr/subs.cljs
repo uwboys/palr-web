@@ -31,3 +31,13 @@
  :progress
  (fn [db _]
    (:progress db)))
+
+(re-frame/reg-sub
+ :session
+ (fn [db _]
+   (:session db)))
+
+(re-frame/reg-sub
+ :profile-open?
+ (fn [db _]
+   (:profile-open? db)))

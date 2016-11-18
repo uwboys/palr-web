@@ -313,3 +313,10 @@
  (fn [db _]
    (ws/start-client! db)
    db))
+
+;; Profile open
+
+(reg-db
+ :toggle-profile-open?
+ (fn [db _]
+   (update db :profile-open? not)))
