@@ -49,44 +49,37 @@
                    [com.cemerick/piggieback "0.2.1"]]
 
     :plugins      [[lein-figwheel "0.5.7"]
-                   [lein-doo "0.1.7"]
                    [cider/cider-nrepl "0.15.0-SNAPSHOT"]]}}
-
 
   :cljsbuild
   {:builds
-   [{:id           "dev"
-     :source-paths ["src/cljs"]
+   {:dev
+    {:source-paths ["src/cljs"]
      :figwheel     {:on-jsload "palr.core/mount-root"}
-     :compiler     {:main                 palr.core
-                    :output-to            "resources/public/js/compiled/app.js"
-                    :output-dir           "resources/public/js/compiled/out"
-                    :asset-path           "js/compiled/out"
-                    :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
-                                       :provides ["react-progress-bar-plus"]}
-                                      {:file "node_modules/alertify/lib/alertify.js"
-                                       :provides ["alertify"]}
-                                      {:file "node_modules/socket.io-client/socket.io.js"
-                                       :provides ["socket.io-client"]}]
-                    :source-map-timestamp true}}
+     :compiler     {:main                     palr.core
+                    :output-to                "resources/public/js/compiled/app.js"
+                    :output-dir               "resources/public/js/compiled/out"
+                    :asset-path               "js/compiled/out"
+                    :foreign-libs             [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
+                                                :provides ["js.react-progress-bar-plus"]} ;; need to prefix with js.
+                                               {:file "node_modules/alertify/lib/alertify.js"
+                                                :provides ["js.alertify"]}
+                                               {:file "node_modules/socket.io-client/socket.io.js"
+                                                :provides ["js.socket.io-client"]}]
+                    :source-map-timestamp     true
+                    :externs                  ["externs/alertify.js" "externs/socket.io-client.js"]}}
 
-    {:id           "min"
-     :source-paths ["src/cljs"]
-     :compiler     {:main            palr.core
-                    :output-to       "resources/public/js/compiled/app.js"
-                    :optimizations   :advanced
-                    :foreign-libs    [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
-                                       :provides ["react-progress-bar-plus"]}
-                                      {:file "node_modules/alertify/lib/alertify.js"
-                                       :provides ["alertify"]}
-                                      {:file "node_modules/socket.io-client/socket.io.js"
-                                       :provides ["socket.io-client"]}]
-                    :closure-defines {goog.DEBUG false}
-                    :pretty-print    false}}
-    {:id           "test"
-     :source-paths ["src/cljs" "test/cljs"]
-     :compiler     {:output-to     "resources/public/js/compiled/test.js"
-                    :main          palr.runner
-                    ;; This is a bit weird. Don't know why it works
-                    :output-dir    "resources/public/js/out"
-                    :optimizations :none}}]})
+    :prod
+    {:source-paths ["src/cljs"]
+     :compiler     {:main                     palr.core
+                    :output-to                "resources/public/js/compiled/app.js"
+                    :optimizations            :advanced
+                    :foreign-libs             [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
+                                                :provides ["js.react-progress-bar-plus"]}
+                                               {:file "node_modules/alertify/lib/alertify.js"
+                                                :provides ["js.alertify"]}
+                                               {:file "node_modules/socket.io-client/socket.io.js"
+                                                :provides ["js.socket.io-client"]}]
+                    :closure-defines           {goog.DEBUG false}
+                    :pretty-print              false
+                    :externs                   ["externs/alertify.js" "externs/socket.io-client.js"]}}}})

@@ -1,8 +1,8 @@
 (ns palr.ws
-  (:require [socket.io-client]
+  (:require [js.socket.io-client]
             [palr.constant :as pc]
             [re-frame.core :as re-frame]
-            [alertify]))
+            [js.alertify]))
 
 (defonce socket (atom nil))
 

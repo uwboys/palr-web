@@ -7,12 +7,12 @@
             [palr.routes :as routes]
             [palr.views :as views]
             [palr.config :as config]
-            [palr.ws :as ws]
-            [alertify]))
+            [palr.ws :as ws]))
+
+(enable-console-print!)
 
 (defn dev-setup []
   (when config/debug?
-    (enable-console-print!)
     (println "dev mode")
     (devtools/install!)))
 

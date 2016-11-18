@@ -6,7 +6,7 @@
             [palr.util]
             [cljs-time.format :as ctf]
             [cljs-time.core :as ctc]
-            [react-progress-bar-plus]
+            [js.react-progress-bar-plus]
             [clojure.string]))
 
 (def ^:const colors
@@ -73,8 +73,6 @@
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
         [PalrButton {:type "submit" :class "flex-auto mt1"} "Sign Up"]]])))
 
-(def avatar "http://placehold.it/40x40")
-
 (defn ConversationCard [conversation-data-id name message]
   [:div.flex.btn.p0.regular.p-hover-bg-gray.items-center {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
    [Avatar name]
@@ -117,16 +115,19 @@
    (into [:div.rounded {:style {:width "90%" :height "90%" :background-color "rgba(255, 255, 255, 0.95)"}}]
          attrs)])
 
+(defn ConversationSidebar [conversations messages]
+  [:div.col-4.m0.overflow-scroll
+   [:h2.h2.center.px2 "Conversations"]
+   (for [{conversation-data-id :conversationDataId date :lastMessageDate {name :name} :pal} conversations]
+     ^{:key conversation-data-id} [ConversationCard conversation-data-id name (last (get messages conversation-data-id []))])])
+
 (defn ConversationsPage [router-params]
   (let [conversations (re-frame/subscribe [:conversations])
         messages (re-frame/subscribe [:messages])]
     (fn [router-params]
       [PalrContainer
        [:div.flex.clearfix {:style {:height "100%"}}
-        [:div.col-4.m0.overflow-scroll
-         [:h2.h2.center.px2 "Conversations"]
-         (for [{conversation-data-id :conversationDataId date :lastMessageDate {name :name} :pal} @conversations]
-           ^{:key conversation-data-id} [ConversationCard conversation-data-id name (last (get @messages conversation-data-id []))])]
+        [ConversationSidebar @conversations @messages]
         [:div.col-8
          [:div.overflow-scroll.p2.bg-white {:style {:height "100%"}}
           (if-let [id (:id router-params)]

@@ -8,7 +8,8 @@
             [palr.middleware :as palr.mw]
             [palr.util]
             [palr.ws :as ws]
-            [cljs.pprint]))
+            [cljs.pprint]
+            [js.alertify]))
 
 (def common-interceptors [palr.middleware/persist-session!
                           re-frame/trim-v])
