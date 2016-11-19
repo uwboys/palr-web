@@ -2,12 +2,14 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
             [palr.components.common :refer [PalrBackground]]
-            [palr.components.ui :refer [ScrollDiv Avatar Icon]]
+            [palr.components.ui :refer [ScrollDiv Avatar Icon Select Creatable Textarea]]
             [palr.util]
             [cljs-time.format :as ctf]
             [cljs-time.core :as ctc]
             [js.react-progress-bar-plus]
-            [clojure.string]))
+            [clojure.string]
+            [cljs.pprint]
+            [palr.constant :as pc]))
 
 (def ^:const colors
   ["#EAEFBD" "#C9E3AC" "#90BE6D" "#EA9010" "#37371F"])
@@ -27,6 +29,16 @@
 
 (defn sync [atom attrs]
   (assoc attrs :value @atom :on-change #(reset! atom (-> % .-target .-value))))
+
+(defn sync-Select [atom attrs]
+  (assoc attrs :value @atom :onChange #(reset! atom %)))
+
+(defn sync-Textarea [atom attrs]
+  (assoc attrs :value @atom :onChange #(reset! atom (-> % .-target .-value))))
+
+(defn prevent-default [event]
+  (.preventDefault event)
+  event)
 
 (defn dispatch-submit [[type & atoms] & resetters]
   (fn [event]
@@ -62,34 +74,40 @@
   (let [name     (reagent/atom "")
         email    (reagent/atom "")
         password (reagent/atom "")
-        location (reagent/atom "")]
+        country (reagent/atom "")]
     (fn []
-      [:form.flex.flex-column {:on-submit (dispatch-submit [:register-flow name email password location])}
+      [:form.flex.flex-column {:on-submit (dispatch-submit [:register-flow name email password country])}
        [:input.input.mb1 (sync name {:type "text" :placeholder "Name"})]
        [:input.input.mb1 (sync email {:type "email" :placeholder "Email"})]
        [:input.input.mb1 (sync password {:type "password" :placeholder "Password"})]
-       [:input.input.mb1 (sync location {:type "text" :placeholder "Location"})]
+       [Select (sync-Select country {:options pc/Countries :placeholder "Country" :clearable false :class "border-none" :simpleValue true})]
        [:div.flex.relative
         [RouterButton "/" [LeftArrow] {:class "absolute" :style {:background-color (colors 1) :color (last colors)}}]
         [PalrButton {:type "submit" :class "flex-auto mt1"} "Sign Up"]]])))
 
-(defn ConversationCard [conversation-data-id name message]
-  [:div.flex.btn.p0.regular.bg-white.p-hover-bg-gray.items-center {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
-   [Avatar name]
-   [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
-    [:div.flex.justify-between
-     [:span.h4.mb1 {:style {:color (colors 4)}} name]
-     [:span.h5.gray (when (:createdAt message) (palr.util/get-date (:createdAt message)))]]
-    [:div.h5.gray.truncate (:content message)]]])
+(defn ConversationCard [conversation message]
+  (let [name (-> conversation :pal :name)
+        conversation-data-id (-> conversation :conversationDataId)
+        permanent? (-> conversation :isPermanent)]
+    [:div.flex.btn.p0.regular.p-hover-bg-gray.bg-white.items-center {:on-click #(re-frame/dispatch [:change-route (str "/conversations/" conversation-data-id)])}
+     [Avatar name (if permanent? "p-bg-green" "bg-white") :md]
+     [:div.py2.pr1.flex-auto.flex.flex-column.p-border-bottom
+      [:div.flex.justify-between
+       [:span.h4.mb1 {:style {:color (colors 4)}} name]
+       [:span.h5.gray (when (:createdAt message) (palr.util/get-date (:createdAt message)))]]
+      [:div.h5.gray.truncate (:content message)]]]))
 
-(defn ConversationHeader [name]
-  [:div.flex.bg-darken-1.p-no-shrink
-   [Avatar name :sm]
-   [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
-    [:span.h3 {:style {:color (colors 4)}} name]]])
+(defn ConversationHeader [{:keys [isPermanent id requestPermanent] {:keys [name]} :pal :as conversation}]
+  [:div.flex.bg-darken-1.p-no-shrink.justify-between.items-center.px1
+   [:div.flex
+    [Avatar name :sm]
+    [:div.py1.pr1.flex-auto.flex.flex-column.justify-center
+     [:span.h3 {:style {:color (colors 4)}} name]]]
+   (when-not isPermanent
+     [PalrButton {:on-click #(re-frame/dispatch [:request-permanence id]) :disabled requestPermanent} "Request Permanence"])])
 
 (defn MessageBox [messages]
-  [ScrollDiv {:class "flex-auto overflow-scroll mb1"}
+  [ScrollDiv {:class "flex-auto overflow-scroll mb1 px1"}
    (for [message messages]
      ^{:key message} [:div
                       [:span.bold.mr1 (-> message :createdBy :name)]
@@ -100,11 +118,11 @@
     (fn [convo messages]
       [:form.flex.flex-column {:on-submit (dispatch-submit [:send-message (atom (:conversationDataId convo)) content])
                                :style {:height "100%"}}
-       [ConversationHeader (-> convo :pal :name)]
+       [ConversationHeader convo]
        [:div.flex.flex-column.p1.flex-auto
         [MessageBox messages]
-        [:div.flex.items-center.bg-darken-1.p1y.p-no-shrink
-        [:input.flex-auto.input.m0.mr1 (sync content {:type "text" :rows 1 :placeholder "Write your letter"})]
+        [:div.flex.items-end.bg-darken-1.p1.p-no-shrink.rounded
+         [Textarea (sync-Textarea content {:type "text" :className "flex-auto textarea p-resize-none m0 mr1" :minRows 1 :maxRows 20 :placeholder "Write your letter"})]
          [PalrButton {:type "submit"} "Send"]]]])))
 
 (defn filter-one [func coll]
@@ -116,21 +134,68 @@
    (into [:div.rounded {:style {:width "90%" :height "90%" :background-color "rgba(255, 255, 255, 0.95)"}}]
          attrs)])
 
-(defn CircularButton [])
+(defn ProfileInputBox [label input]
+  [:div.rounded.mb2.bg-white.p1
+   [:label label input]])
+
+(defn trace [x] (cljs.pprint/pprint x) x)
+
+(defn ProfileSidebar [session]
+  (let [gender (reagent/atom (:gender session))
+        country (reagent/atom (:country session))
+        age (reagent/atom (:age session))
+        ethnicity (reagent/atom (:ethnicity session))
+        hobbies (reagent/atom (clj->js (map #(identity {:label % :value %}) (:hobbies session)))) ;; multi-select is strange. We need to make the selected value conform the structure of the option elements
+        dispatch-update #(re-frame/dispatch [:save-profile @gender @country @age @ethnicity (.map @hobbies (fn [hobby] (.-value hobby)))])
+        handle-submit (comp dispatch-update prevent-default)]
+    (fn [session]
+      [:form.p2.flex.flex-column.bg-darken-1.p-h-100 {:on-submit handle-submit}
+       [:div.h1.center.mb2 "Profile"]
+       [:div.px2
+        [:div
+         [ProfileInputBox
+          "Gender"
+          [Select (sync-Select gender {:options pc/Genders :clearable false :class "border-none" :simpleValue true})]]
+         [ProfileInputBox
+          "Country"
+          [Select (sync-Select country {:options pc/Countries :clearable false :class "border-none" :simpleValue true})]]
+         [ProfileInputBox
+          "Age"
+          [Select (sync-Select age {:options pc/Ages :clearable false :class "border-none" :simpleValue true})]]
+         [ProfileInputBox
+          "Ethnicity"
+          [Creatable (sync-Select ethnicity {:options pc/Ethnicities :clearable false :class "border-none" :simpleValue true})]]
+         [ProfileInputBox
+          "Hobbies"
+          [Creatable (sync-Select hobbies {:multi true})]]]
+        [PalrButton {:class "p-w-100" :type "submit"} "Update"]]])))
+
+(defn EllipsisDropdown [items on-click]
+  (let [open (reagent/atom false)]
+    (fn [items on-click]
+      [:div.relative.px1.p-ellipsis-dropdown
+       [:button.btn.circle.center.p-focus-no-shadow.p-transition-1.gray.p0.border-none {:style {:width "30px" :height "30px" :line-height "30px"}}
+        [Icon {:class "ellipsis-v" :size 3}]]
+       [:div.absolute.bg-white.p-ellipsis-dropdown-items.rounded.p-hover-bg-gray.z1 {:style {:top "100%" :right "0" :box-shadow "0px 0px 0.05rem 0.05rem lightgray"}}
+        (for [[key label] (seq items)]
+          ^{:key key} [:div.btn.p-focus-no-shadow.border-none {:on-click #(on-click key)} label])]])))
 
 (defn ConversationSidebar [profile-open? session conversations messages]
-  [:div.col-4.m0.overflow-scroll
-   [:div.bg-darken-1.flex.items-center.justify-between
+  [:div.m0.p-h-100
+   [:div.bg-darken-1.flex.items-center.justify-between.pr1
     [Avatar (:name session) :sm]
-    [:button.btn.circle.p-focus-no-border.center.p-focus-no-shadow.p-transition-1.gray.p0 {:type "button"
-                                                                                 :class (if profile-open? "bg-darken-2" "")
-                                                                                 :on-click #(re-frame/dispatch [:toggle-profile-open?])
-                                                                                 :style {:width "30px" :height "30px" :line-height "30px"}}
-     [Icon {:class "user" :size 2}]]]
-   (if profile-open?
-     "Profile page!"
-     (for [{conversation-data-id :conversationDataId date :lastMessageDate {name :name} :pal} conversations]
-       ^{:key conversation-data-id} [ConversationCard conversation-data-id name (last (get messages conversation-data-id []))]))])
+    [:div.flex
+     [:button.btn.circle.center.p-focus-no-shadow.p-transition-1.gray.p0.border-none.px1 {:type "button"
+                                                                                          :class (if profile-open? "bg-darken-2" "")
+                                                                                          :on-click #(re-frame/dispatch [:toggle-profile-open?])
+                                                                                          :style {:width "30px" :height "30px" :line-height "30px"}}
+      [Icon {:class "user" :size 2}]]
+     [EllipsisDropdown {:logout "Logout"} #(case % :logout (re-frame/dispatch [:logout]))]]]
+   [:div.overflow-scroll.p-h-100
+    (if profile-open?
+      [ProfileSidebar session]
+      (for [conversation conversations]
+        ^{:key conversation} [ConversationCard conversation (last (get messages (:conversationDataId conversation) []))]))]])
 
 (defn ConversationsPage [router-params]
   (let [profile-open? (re-frame/subscribe [:profile-open?])
@@ -139,15 +204,15 @@
         messages (re-frame/subscribe [:messages])]
     (fn [router-params]
       [PalrContainer
-       [:div.flex.clearfix {:style {:height "100%"}}
-        [ConversationSidebar @profile-open? @session @conversations @messages]
+       [:div.flex.clearfix.p-h-100
+        [:div.col-4 [ConversationSidebar @profile-open? @session @conversations @messages]]
         [:div.col-8
-         [:div.overflow-scroll.bg-white {:style {:height "100%"}}
+         [:div.overflow-scroll.bg-white.p-h-100
           (if-let [id (:id router-params)]
             (let [convo (filter-one #(= (:conversationDataId %) id) @conversations)
                   convo-messages (get @messages (:conversationDataId convo) [])]
               [Conversation convo convo-messages])
-            [:div.flex.justify-center.items-center {:style {:height "100%"}} "Please pick a pal!"])]]]])))
+            [:div.flex.justify-center.items-center.p-h-100 "Please pick a pal!"])]]]])))
 
 (defn MatchMe []
   [PalrContainer

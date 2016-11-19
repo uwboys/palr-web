@@ -21,6 +21,9 @@
 (defn save-session-to-storage! [session]
   (save-to-storage! pc/session-name session))
 
+(defn clear-session! []
+  (save-session-to-storage! {}))
+
 ;; https://github.com/gf3/secretary/issues/23
 (defn set-hash!
   "Set the location hash of a js/window object."

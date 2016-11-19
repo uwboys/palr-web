@@ -1,6 +1,10 @@
 (ns palr.components.ui
   (:require [reagent.core :as reagent]
-            [palr.util :as util]))
+            [palr.util :as util]
+            [js.classnames]
+            [js.react-input-autosize]
+            [js.react-select]
+            [js.react-textarea-autosize]))
 
 ;; SnowCanvas
 
@@ -99,10 +103,11 @@
 
 (defn Avatar
   ([name] (Avatar name :md))
-  ([name s]
-   (let [size ({:md "50px" :sm "40px" :lg "60px"} s)]
+  ([name s] (Avatar name "bg-gray" s))
+  ([name bg-color s]
+   (let [size ({:md "50px" :sm "40px" :xs "30px" :lg "60px"} s)]
      [:div.py1.px2
-      [:div.circle.bg-gray.center.h1.white.p-no-select {:style {:width size :height size :line-height size}}
+      [:div.circle.center.h1.white.p-no-select {:style {:width size :height size :line-height size} :class bg-color}
        (.toUpperCase (or (first name) ""))]])))
 
 ;; Font-Awesome
@@ -121,3 +126,15 @@
                       (if pulse "fa-pulse") " "
                       (if stack (str "fa-stack-" stack)) " "
                       (if inverse "fa-inverse")))])
+
+(defn Select [props]
+  (fn [props]
+    (.createElement js/React js/Select (clj->js props))))
+
+(defn Creatable [props]
+  (fn [props]
+    (.createElement js/React (.-Creatable js/Select) (clj->js props))))
+
+(defn Textarea[props]
+  (fn [props]
+    (.createElement js/React js/TextareaAutosize (clj->js props))))

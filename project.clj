@@ -27,7 +27,11 @@
                        [basscss-color-forms "^3.0.2"]
                        [react-progress-bar-plus "^1.2.0"]
                        [alertify "^0.3.0"]
-                       [socket.io-client "^1.5.1"]]
+                       [socket.io-client "^1.5.1"]
+                       [react-select "^1.0.0-rc.2"]
+                       [classnames "^2.2.5"]
+                       [react-input-autosize "^1.1.0"]
+                       [react-textarea-autosize "uwboys/react-textarea-autosize#c688fb01b012e64cdc1df8edee71a17ec2e17d97"]]
         :package {:scripts {:postcss "postcss -c postcss.config.json -o resources/public/css/site.css ./styles/index.css"
                             :postcss:watch "npm run postcss -- --watch"}}}
 
@@ -65,9 +69,19 @@
                                                {:file "node_modules/alertify/lib/alertify.js"
                                                 :provides ["js.alertify"]}
                                                {:file "node_modules/socket.io-client/socket.io.js"
-                                                :provides ["js.socket.io-client"]}]
+                                                :provides ["js.socket.io-client"]}
+                                               {:file "node_modules/react-select/dist/react-select.js"
+                                                :provides ["js.react-select"]}
+                                               {:file "node_modules/classnames/index.js"
+                                                :provides ["js.classnames"]}
+                                               {:file "node_modules/react-input-autosize/dist/react-input-autosize.min.js"
+                                                :provides ["js.react-input-autosize"]}
+                                               {:file "node_modules/react-textarea-autosize/lib/TextareaAutosize.min.js"
+                                                :provides ["js.react-textarea-autosize"]}]
                     :source-map-timestamp     true
-                    :externs                  ["externs/alertify.js" "externs/socket.io-client.js"]}}
+                    :externs                  ["externs/alertify.js"
+                                               "externs/socket.io-client.js"
+                                               ]}}
 
     :prod
     {:source-paths ["src/cljs"]
@@ -79,7 +93,15 @@
                                                {:file "node_modules/alertify/lib/alertify.js"
                                                 :provides ["js.alertify"]}
                                                {:file "node_modules/socket.io-client/socket.io.js"
-                                                :provides ["js.socket.io-client"]}]
+                                                :provides ["js.socket.io-client"]}
+                                               {:file "node_modules/react-select/dist/react-select.js"
+                                                :provides ["js.react-select"]}
+                                               {:file "node_modules/classnames/index.js"
+                                                :provides ["js.classnames"]}
+                                               {:file "node_modules/react-input-autosize/dist/react-input-autosize.min.js"
+                                                :provides ["js.react-input-autosize"]}
+                                               {:file "node_modules/react-textarea-autosize/lib/TextareaAutosize.min.js"
+                                                :provides ["js.react-textarea-autosize"]}]
                     :closure-defines           {goog.DEBUG false}
                     :pretty-print              false
                     :externs                   ["externs/alertify.js" "externs/socket.io-client.js"]}}}})

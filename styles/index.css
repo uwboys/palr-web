@@ -37,12 +37,19 @@
 @import 'alertify/themes/alertify.core';
 @import 'alertify/themes/alertify.default';
 
+/** React-select **/
+@import 'react-select/dist/react-select.min';
+
 .react-progress-bar-percent {
     transition: all 400ms ease;
 }
 
 .p-hover-bg-gray:hover {
     background-color: #e9ebeb;
+}
+
+.p-focus-bg-lightgray:hover {
+    background-color: lightgray;
 }
 
 .p-border-bottom {
@@ -57,14 +64,34 @@
     user-select: none;
 }
 
-.p-focus-no-border:focus {
-    border: none;
-}
-
 .p-focus-no-shadow:focus {
     box-shadow: none;
 }
 
 .p-transition-1 {
     transition: 1s;
+}
+
+.p-h-100 {
+    height: 100%;
+}
+
+.p-w-100 {
+    width: 100%;
+}
+
+.p-bg-green {
+    background-color: #C9E3AC;
+}
+
+.p-ellipsis-dropdown-items {
+    display: none;
+}
+
+.p-ellipsis-dropdown:hover .p-ellipsis-dropdown-items {
+    display: block;
+}
+
+.p-resize-none {
+    resize: none;
 }

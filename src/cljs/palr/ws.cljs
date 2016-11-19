@@ -20,4 +20,9 @@
       (reset! socket (.connect js/io (str pc/api "/ws")))
       (emit! "add_client" access-token)
       (on! "message" #(re-frame/dispatch [:save-message (js->clj % :keywordize-keys true)]))
-      (on! "matched" #(.success js/alertify "You were matched")))))
+      (on! "temporary_match" #(doseq [action [[:toast-success "You were matched"]
+                                              [:refresh-user]]]
+                                (re-frame/dispatch action)))
+      (on! "permanent_match" #(doseq [action [[:toast-success "You have a permanent match!"]
+                                              [:fetch-conversations "/"]]]
+                                (re-frame/dispatch action))))))

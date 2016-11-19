@@ -9,7 +9,8 @@
             [palr.util]
             [palr.ws :as ws]
             [cljs.pprint]
-            [js.alertify]))
+            [js.alertify]
+            [palr.util :as util]))
 
 (def common-interceptors [palr.middleware/persist-session!
                           re-frame/trim-v])
@@ -68,8 +69,8 @@
 
 (reg-fx
  :register-flow
- (fn [_ [name email password location]]
-   {:async-flow (auth-flow [:register name email password location] :register-success)}))
+ (fn [_ [name email password country]]
+   {:async-flow (auth-flow [:register name email password country] :register-success)}))
 
 (reg-fx
  :auth-flow-success
@@ -81,6 +82,14 @@
  (fn [_ [type]]
    {:async-flow {:first-dispatch [:request-pal type]
                  :rules [{:when :seen? :events :request-pal-success :dispatch [:change-route "/conversations"]}]}}))
+
+;; Useful for updating after socket updates
+
+(reg-fx
+ :refresh-user
+ (fn [_ _]
+   {:async-flow {:first-dispatch [:fetch-user]
+                 :rules [{:when :seen? :events :fetch-user-success :dispatch [:change-route "/"]}]}}))
 
 ;; Fetch logged in user
 
@@ -107,8 +116,7 @@
  :fetch-user-failure
  (fn [_ event]
    (println "Failed to fetch user" event)
-   (.error js/alertify "Failed to fetch user")
-   {:dispatch [:set-progress 100]}))
+   {:dispatch-n [[:toast-failure "Failed to fetch user"] [:set-progress 100]]}))
 
 ;; Login
 
@@ -135,19 +143,18 @@
  :login-failure
  (fn [_ event]
    (println "Login failure" event)
-   (.error js/alertify "Login failure")
-   {:dispatch [:set-progress 100]}))
+   {:dispatch-n [[:toast-failure "Login failure"] [:set-progress 100]]}))
 
 ;; Register
 
 (reg-fx
  :register
- (fn [ctx [name email password location]]
+ (fn [ctx [name email password country]]
    {:dispatch   [:set-progress    25]
     :http-xhrio {:method          :post
                  :uri             (palr.util/api "/register")
                  :timeout         8000
-                 :params          {:name name :email email :password password :location location}
+                 :params          {:name name :email email :password password :country country}
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:register-success]
@@ -162,8 +169,7 @@
 (reg-fx
  :register-failure
  (fn [_ [{:keys [response]}]]
-   (.error js/alertify (:message response))
-   {:dispatch [:set-progress 100]}))
+   {:dispatch-n [[:toast-success (:message response)] [:set-progress 100]]}))
 
 ;; Fetch Conversations
 
@@ -190,8 +196,7 @@
  :fetch-conversations-failure
  (fn [_ event]
    (println "Failed to fetch conversations" event)
-   (.error js/alertify "Failed to fetch conversations")
-   {:dispatch [:set-progress 100]}))
+   {:dispatch-n [[:toast-failure "Failed to fetch conversations"] [:set-progress 100]]}))
 
 ;; Reset router params
 
@@ -227,9 +232,7 @@
  :request-pal-failure
  (fn [_ event]
    (println event)
-   (.error js/alertify "Failed to request a pal")
-   {:dispatch [:set-progress 100]}))
-
+   {:dispatch-n [[:toast-failure "Failed to request a pal"] [:set-progress 100]]}))
 
 ;; fetch messages
 
@@ -261,13 +264,12 @@
  :fetch-messages-failure
  (fn [_ event]
    (println event)
-   (.error js/alertify "Failed to fetch messages")
-   {:dispatch [:set-progress 100]}))
+   {:dispatch-n [[:toast-failure "Failed to fetch messages"] [:set-progress 100]]}))
 
 (reg-db
  :save-message
  (fn [db [message]]
-   (update-in db [:messages (:conversationDataId message)] conj message)))
+   (update-in db [:messages (:conversationDataId message)] #(conj (vec %1) %2) message)))
 
 ;; save a message
 
@@ -289,21 +291,20 @@
 
 (reg-fx
  :send-message-success
- (fn [_ event]
+ (fn [_ [{:keys [response]}]]
    {:dispatch [:set-progress 100]}))
 
 (reg-fx
  :send-message-failure
- (fn [_ event]
-   (println event)
-   {:dispatch [:set-progress 100]}))
+ (fn [_ [{:keys [response]}]]
+   (println response)
+   {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
 
 ;; progress bar
 
 (reg-db
  :set-progress
  (fn [db [progress]]
-   (println "Setting progress! " progress)
    (assoc db :progress progress)))
 
 ;; connect to socket io server
@@ -320,3 +321,82 @@
  :toggle-profile-open?
  (fn [db _]
    (update db :profile-open? not)))
+
+;; Save Profiles
+
+(reg-fx
+ :save-profile
+ (fn [{:keys [db]} [gender country age ethnicity hobbies]]
+   (let [access-token (-> db :session :access-token)]
+     {:dispatch   [:set-progress    25]
+      :http-xhrio {:method          :put
+                   :uri             (palr.util/api "/users/me")
+                   :params          {:gender gender :country country :age age :ethnicity ethnicity :hobbies hobbies}
+                   :timeout         8000
+                   :headers         {:authorization access-token}
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:save-profile-success]
+                   :on-failure      [:save-profile-failure]}})))
+
+(reg-fx
+ :save-profile-success
+ (fn [_ [{:keys [response]}]]
+   {:dispatch [:set-progress 100]}))
+
+(reg-fx
+ :save-profile-failure
+ (fn [_ [{:keys [response]}]]
+   (println response)
+   {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
+
+;; Request Permanence
+
+(reg-fx
+ :request-permanence
+ (fn [{:keys [db]} [conversation-id]]
+   (let [access-token (-> db :session :access-token)]
+     {:dispatch   [:set-progress    25]
+      :http-xhrio {:method          :post
+                   :uri             (palr.util/api "/match/permanent")
+                   :params          {:conversationId conversation-id}
+                   :timeout         8000
+                   :headers         {:authorization access-token}
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:request-permanence-success]
+                   :on-failure      [:request-permanence-failure]}})))
+
+(reg-fx
+ :request-permanence-success
+ (fn [_ [{:keys [response]}]]
+   {:dispatch-n [[:toast-success (:message response)] [:fetch-conversations] [:set-progress 100]]}))
+
+(reg-fx
+ :request-permanence-failure
+ (fn [_ [{:keys [response]}]]
+   (println response)
+   {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
+
+;; Alertify handler
+(reg-db
+ :toast-success
+ (fn [db [message]]
+   (.success js/alertify message)
+   db))
+
+(reg-db
+ :toast-failure
+ (fn [db [message]]
+   (.error js/alertify message)
+   db))
+
+
+;; Logout
+;; Make sure we don't persist the session
+(re-frame/reg-event-db
+ :logout
+ []
+ (fn [db _]
+   (js/setTimeout #(do (util/clear-session!) (.reload (.-location js/document) true)))
+   db))
