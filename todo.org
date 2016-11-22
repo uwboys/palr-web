@@ -1,0 +1,17 @@
+* Todo
+  - Get matched with the same guy twice (once permanently, another temporary)
+  - When a user is matched with a permanent pal, but wants to request another
+    temporary pal, he navigates to the /match-me page, clicks on a button and is
+    unexpectedly redirected to the conversations page. A notification would
+    make the transition responsive
+  - Allow permanent user's to see each other's profiles
+  - Fetch and browse all conversations with user.
+    - Either load all conversations from the get-go, or do pagination
+  - Once pals are matched, their common interest is shown in the conversation
+  - Go through all the handlers on the client-side to make sure toasts show up
+    non-empty. Does re-frame-http-effects call the success action with an object
+    containing a :response value? or does it pass the response directly to the
+    success handler?
+  - Add inputs to edit email, name, and password in the profile
+  - Implement speech bubbles
+  - Deploy server and clients
