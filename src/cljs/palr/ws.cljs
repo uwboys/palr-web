@@ -7,13 +7,13 @@
 (defonce socket (atom nil))
 
 (defn emit! [name data]
-  (.emit @socket name data))
+  #_(.emit @socket name data))
 
 (defn on! [name fn]
-  (.on @socket name fn))
+  #_(.on @socket name fn))
 
 (defn start-client! [db]
-  (let [access-token (-> db :session :access-token)
+  #_(let [access-token (-> db :session :access-token)
         signed-in? (not (nil? access-token))
         not-connected? (nil? @socket)]
     (when (and signed-in? not-connected?)
@@ -24,5 +24,6 @@
                                               [:refresh-user]]]
                                 (re-frame/dispatch action)))
       (on! "permanent_match" #(doseq [action [[:toast-success "You have a permanent match!"]
+                                              [:fetch-user]
                                               [:fetch-conversations "/"]]]
                                 (re-frame/dispatch action))))))
