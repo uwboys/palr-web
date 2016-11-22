@@ -41,3 +41,8 @@
  :profile-open?
  (fn [db _]
    (:profile-open? db)))
+
+(re-frame/reg-sub
+ :pal-profile-open?
+ (fn [db _]
+   (:pal-profile-open? db)))

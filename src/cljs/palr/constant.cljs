@@ -4,9 +4,11 @@
 
 (def ^:const URLS {:heroku "https://palr.herokuapp.com"
                    :azure "http://palrserver.azurewebsites.net"
-                   :ngrok "https://c7fa5b0d.ngrok.io"})
+                   :ngrok "https://c93e5d09.ngrok.io"
+                   :digital-ocean "http://159.203.1.140:5000"
+                   :localhost "http://0.0.0.0:5000"})
 
-(def api (:heroku URLS))
+(def api (:localhost URLS))
 
 (def ^:const countries
   ["Aruba",
@@ -405,3 +407,4 @@
 
 (def ^:const Genders
   (map #(identity {:label % :value (.toLowerCase %)}) ["Male" "Female"]))
+

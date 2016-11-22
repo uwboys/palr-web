@@ -101,14 +101,14 @@
       (fn [& attrs]
         (into [:div] attrs))})))
 
-(defn Avatar
-  ([name] (Avatar name :md))
-  ([name s] (Avatar name "bg-gray" s))
-  ([name bg-color s]
-   (let [size ({:md "50px" :sm "40px" :xs "30px" :lg "60px"} s)]
-     [:div.py1.px2
-      [:div.circle.center.h1.white.p-no-select {:style {:width size :height size :line-height size} :class bg-color}
-       (.toUpperCase (or (first name) ""))]])))
+(defn Avatar [{:keys [name size bg-color on-click] :or {size :md bg-color "bg-gray"}}]
+  (let [size ({:md "50px" :sm "40px" :xs "30px" :lg "60px"} size)
+        styles {:width size :height size :line-height size}]
+    [:div.py1.px2
+     [:div.circle.center.h1.white.p-no-select {:style (if (-> on-click nil? not) (merge styles {:cursor "pointer"}) styles)
+                                               :class bg-color
+                                               :on-click on-click}
+      (.toUpperCase (or (first name) ""))]]))
 
 ;; Font-Awesome
 
@@ -138,3 +138,16 @@
 (defn Textarea[props]
   (fn [props]
     (.createElement js/React js/TextareaAutosize (clj->js props))))
+
+
+;; Ellipsis dropdown
+
+(defn EllipsisDropdown [items on-click]
+  (let [open (reagent/atom false)]
+    (fn [items on-click]
+      [:div.relative.px1.p-ellipsis-dropdown
+       [:button.btn.circle.center.p-focus-no-shadow.p-transition-1.gray.p0.border-none {:style {:width "30px" :height "30px" :line-height "30px"}}
+        [Icon {:class "ellipsis-v" :size 3}]]
+       [:div.absolute.bg-white.p-ellipsis-dropdown-items.rounded.p-hover-bg-gray.z1 {:style {:top "100%" :right "0" :box-shadow "0px 0px 0.05rem 0.05rem lightgray"}}
+        (for [[key label] (seq items)]
+          ^{:key key} [:div.btn.p-focus-no-shadow.border-none {:on-click #(on-click key)} label])]])))

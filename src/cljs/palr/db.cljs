@@ -11,4 +11,5 @@
    :isPemanentlyMatched false
    :router-params {}
    :progress 100
-   :profile-open? false})
+   :profile-open? false
+   :pal-profile-open? false})

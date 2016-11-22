@@ -169,7 +169,7 @@
 (reg-fx
  :register-failure
  (fn [_ [{:keys [response]}]]
-   {:dispatch-n [[:toast-success (:message response)] [:set-progress 100]]}))
+   {:dispatch-n [[:toast-failure (or (:message response) "Registration failed")] [:set-progress 100]]}))
 
 ;; Fetch Conversations
 
@@ -226,7 +226,10 @@
  :request-pal-success
  (fn [{:keys [db]} [response]]
    {:db (update db :session #(merge % response))
-    :dispatch [:set-progress 100]}))
+    :dispatch-n [[:set-progress 100] [:toast-success (cond
+                                                       (:inMatchProcess response) "Placed in matching process!"
+                                                       (:isTemporarilyMatched response) "Successfully matched with a pal!"
+                                                       :else "Successfully requested a pal!")]]}))
 
 (reg-fx
  :request-pal-failure
@@ -322,16 +325,24 @@
  (fn [db _]
    (update db :profile-open? not)))
 
+(reg-db
+ :toggle-pal-profile-open?
+ (fn [db _]
+   (update db :pal-profile-open? not)))
+
+
 ;; Save Profiles
 
 (reg-fx
  :save-profile
- (fn [{:keys [db]} [gender country age ethnicity hobbies]]
+ (fn [{:keys [db]} [email password gender country age ethnicity hobbies]]
    (let [access-token (-> db :session :access-token)]
      {:dispatch   [:set-progress    25]
       :http-xhrio {:method          :put
                    :uri             (palr.util/api "/users/me")
-                   :params          {:gender gender :country country :age age :ethnicity ethnicity :hobbies hobbies}
+                   :params          (cond->
+                                        {:email email :gender gender :country country :age age :ethnicity ethnicity :hobbies hobbies}
+                                      (-> password empty? not) (assoc :password password))
                    :timeout         8000
                    :headers         {:authorization access-token}
                    :format          (ajax/json-request-format)
@@ -369,13 +380,12 @@
 
 (reg-fx
  :request-permanence-success
- (fn [_ [{:keys [response]}]]
-   {:dispatch-n [[:toast-success (:message response)] [:fetch-conversations] [:set-progress 100]]}))
+ (fn [_ [response]]
+   {:dispatch-n [[:toast-success (:message response)] [:fetch-user] [:fetch-conversations] [:set-progress 100]]}))
 
 (reg-fx
  :request-permanence-failure
- (fn [_ [{:keys [response]}]]
-   (println response)
+ (fn [_ [response]]
    {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
 
 ;; Alertify handler
