@@ -6,5 +6,4 @@
 out
 node_modules/
 .#*
-package.json
 .nrepl-port

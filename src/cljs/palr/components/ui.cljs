@@ -1,8 +1,6 @@
 (ns palr.components.ui
   (:require [reagent.core :as reagent]
             [palr.util :as util]
-            [js.classnames]
-            [js.react-input-autosize]
             [js.react-select]
             [js.react-textarea-autosize]))
 
@@ -89,7 +87,8 @@
       :component-will-update
       (fn [this]
         (when-let [el @node]
-          (reset! should-scroll-bottom (= (+ (.-scrollTop el) (.-offsetHeight el)) (.-scrollHeight el)))))
+          (let [approx-equal? (fn [a b] (< (- a 5) b (+ a 5)))]
+            (reset! should-scroll-bottom (approx-equal? (.-scrollHeight el) (+ (.-scrollTop el) (.-offsetHeight el)))))))
 
       :component-did-update
       (fn [this]
@@ -135,10 +134,14 @@
   (fn [props]
     (.createElement js/React (.-Creatable js/Select) (clj->js props))))
 
-(defn Textarea[props]
+(defn Textarea [props]
   (fn [props]
     (.createElement js/React js/TextareaAutosize (clj->js props))))
 
+(defn Dropzone [props]
+  (let [component (reagent/adapt-react-class js/Dropzone)]
+    (fn [props]
+      (into [component] props))))
 
 ;; Ellipsis dropdown
 

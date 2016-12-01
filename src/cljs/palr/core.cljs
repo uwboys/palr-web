@@ -2,6 +2,7 @@
   (:require [reagent.core :as reagent]
             [re-frame.core :as re-frame]
             [devtools.core :as devtools]
+            [js.classnames]
             [palr.handlers]
             [palr.subs]
             [palr.routes :as routes]

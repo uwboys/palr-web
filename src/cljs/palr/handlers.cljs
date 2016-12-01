@@ -114,9 +114,8 @@
 
 (reg-fx
  :fetch-user-failure
- (fn [_ event]
-   (println "Failed to fetch user" event)
-   {:dispatch-n [[:toast-failure "Failed to fetch user"] [:set-progress 100]]}))
+ (fn [_ [{:keys [response]}]]
+   {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
 
 ;; Login
 
@@ -141,9 +140,8 @@
 
 (reg-fx
  :login-failure
- (fn [_ event]
-   (println "Login failure" event)
-   {:dispatch-n [[:toast-failure "Login failure"] [:set-progress 100]]}))
+ (fn [_ [{:keys [response]}]]
+   {:dispatch-n [[:toast-failure (or "Login failure." (:message response))] [:set-progress 100]]}))
 
 ;; Register
 
@@ -194,9 +192,8 @@
 
 (reg-fx
  :fetch-conversations-failure
- (fn [_ event]
-   (println "Failed to fetch conversations" event)
-   {:dispatch-n [[:toast-failure "Failed to fetch conversations"] [:set-progress 100]]}))
+ (fn [_ [{:keys [response]}]]
+   {:dispatch-n [[:toast-failure (or (:message response) "Failed to fetch conversations")] [:set-progress 100]]}))
 
 ;; Reset router params
 
@@ -233,9 +230,8 @@
 
 (reg-fx
  :request-pal-failure
- (fn [_ event]
-   (println event)
-   {:dispatch-n [[:toast-failure "Failed to request a pal"] [:set-progress 100]]}))
+ (fn [_ [{:keys [response]}]]
+   {:dispatch-n [[:toast-failure (or (:message response) "Failed to request a pal")] [:set-progress 100]]}))
 
 ;; fetch messages
 
@@ -265,9 +261,8 @@
 
 (reg-fx
  :fetch-messages-failure
- (fn [_ event]
-   (println event)
-   {:dispatch-n [[:toast-failure "Failed to fetch messages"] [:set-progress 100]]}))
+ (fn [_ [{:keys [response]}]]
+   {:dispatch-n [[:toast-failure (or (:message response) "Failed to fetch messages")] [:set-progress 100]]}))
 
 (reg-db
  :save-message
@@ -294,14 +289,13 @@
 
 (reg-fx
  :send-message-success
- (fn [_ [{:keys [response]}]]
+ (fn [_ [response]]
    {:dispatch [:set-progress 100]}))
 
 (reg-fx
  :send-message-failure
  (fn [_ [{:keys [response]}]]
-   (println response)
-   {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
+   {:dispatch-n [[:toast-failure (or (:message response) "Failed to send message")] [:set-progress 100]]}))
 
 ;; progress bar
 
@@ -352,14 +346,13 @@
 
 (reg-fx
  :save-profile-success
- (fn [_ [{:keys [response]}]]
+ (fn [_ [response]]
    {:dispatch [:set-progress 100]}))
 
 (reg-fx
  :save-profile-failure
  (fn [_ [{:keys [response]}]]
-   (println response)
-   {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
+   {:dispatch-n [[:toast-failure (or (:message response) "Failed to save profile")] [:set-progress 100]]}))
 
 ;; Request Permanence
 
@@ -385,8 +378,8 @@
 
 (reg-fx
  :request-permanence-failure
- (fn [_ [response]]
-   {:dispatch-n [[:toast-failure (:message response)] [:set-progress 100]]}))
+ (fn [_ [{:keys [response]}]]
+   {:dispatch-n [[:toast-failure (or (:message response) "Failed to request permanence")] [:set-progress 100]]}))
 
 ;; Alertify handler
 (reg-db

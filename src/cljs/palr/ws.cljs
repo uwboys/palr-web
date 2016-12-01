@@ -7,13 +7,14 @@
 (defonce socket (atom nil))
 
 (defn emit! [name data]
-  #_(.emit @socket name data))
+  (.emit @socket name data))
 
 (defn on! [name fn]
-  #_(.on @socket name fn))
+  (println "Socket event detected " name)
+  (.on @socket name fn))
 
 (defn start-client! [db]
-  #_(let [access-token (-> db :session :access-token)
+  (let [access-token (-> db :session :access-token)
         signed-in? (not (nil? access-token))
         not-connected? (nil? @socket)]
     (when (and signed-in? not-connected?)

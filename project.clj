@@ -31,7 +31,9 @@
                        [react-select "^1.0.0-rc.2"]
                        [classnames "^2.2.5"]
                        [react-input-autosize "^1.1.0"]
-                       [react-textarea-autosize "uwboys/react-textarea-autosize#c688fb01b012e64cdc1df8edee71a17ec2e17d97"]]
+                       [react-textarea-autosize "uwboys/react-textarea-autosize#c688fb01b012e64cdc1df8edee71a17ec2e17d97"]
+                       [react-dropzone "^3.7.3"]
+                       [attr-accept "^1.1.0"]]
         :package {:scripts {:postcss "postcss -c postcss.config.json -o resources/public/css/site.css ./styles/index.css"
                             :postcss:watch "npm run postcss -- --watch"}}}
 
@@ -49,6 +51,7 @@
 
   :profiles
   {:dev
+
    {:dependencies [[figwheel-sidecar "0.5.7"]
                    [com.cemerick/piggieback "0.2.1"]]
 
@@ -70,18 +73,27 @@
                                                 :provides ["js.alertify"]}
                                                {:file "node_modules/socket.io-client/socket.io.js"
                                                 :provides ["js.socket.io-client"]}
-                                               {:file "node_modules/react-select/dist/react-select.js"
-                                                :provides ["js.react-select"]}
                                                {:file "node_modules/classnames/index.js"
                                                 :provides ["js.classnames"]}
                                                {:file "node_modules/react-input-autosize/dist/react-input-autosize.min.js"
                                                 :provides ["js.react-input-autosize"]}
+                                               {:file "node_modules/react-select/dist/react-select.js"
+                                                :provides ["js.react-select"]
+                                                :requires ["js.react-input-autosize"
+                                                           "js.classnames"]}
                                                {:file "node_modules/react-textarea-autosize/lib/TextareaAutosize.min.js"
-                                                :provides ["js.react-textarea-autosize"]}]
+                                                :provides ["js.react-textarea-autosize"]}
+                                               {:file "node_modules/react-dropzone/dist/index.js"
+                                                :provides ["js.react-dropzone"]
+                                                :requires ["js.attr-accept"]}
+                                               {:file "node_modules/attr-accept/dist/index.js"
+                                                :provides ["js.attr-accept"]}]
                     :source-map-timestamp     true
                     :externs                  ["externs/alertify.js"
                                                "externs/socket.io-client.js"
-                                               ]}}
+                                               "externs/react-select.js"
+                                               "externs/react-input-autosize.js"
+                                               "externs/classnames.js"]}}
 
     :prod
     {:source-paths ["src/cljs"]
@@ -89,19 +101,30 @@
                     :output-to                "resources/public/js/compiled/app.js"
                     :optimizations            :advanced
                     :foreign-libs             [{:file "node_modules/react-progress-bar-plus/dist/react-progress-bar-plus.js"
-                                                :provides ["js.react-progress-bar-plus"]}
+                                                :provides ["js.react-progress-bar-plus"]} ;; need to prefix with js.
                                                {:file "node_modules/alertify/lib/alertify.js"
                                                 :provides ["js.alertify"]}
                                                {:file "node_modules/socket.io-client/socket.io.js"
                                                 :provides ["js.socket.io-client"]}
-                                               {:file "node_modules/react-select/dist/react-select.js"
-                                                :provides ["js.react-select"]}
                                                {:file "node_modules/classnames/index.js"
                                                 :provides ["js.classnames"]}
                                                {:file "node_modules/react-input-autosize/dist/react-input-autosize.min.js"
                                                 :provides ["js.react-input-autosize"]}
+                                               {:file "node_modules/react-select/dist/react-select.js"
+                                                :provides ["js.react-select"]
+                                                :requires ["js.react-input-autosize"
+                                                           "js.classnames"]}
                                                {:file "node_modules/react-textarea-autosize/lib/TextareaAutosize.min.js"
-                                                :provides ["js.react-textarea-autosize"]}]
+                                                :provides ["js.react-textarea-autosize"]}
+                                               {:file "node_modules/react-dropzone/dist/index.js"
+                                                :provides ["js.react-dropzone"]
+                                                :requires ["js.attr-accept"]}
+                                               {:file "node_modules/attr-accept/dist/index.js"
+                                                :provides ["js.attr-accept"]}]
                     :closure-defines           {goog.DEBUG false}
                     :pretty-print              false
-                    :externs                   ["externs/alertify.js" "externs/socket.io-client.js"]}}}})
+                    :externs                   ["externs/alertify.js"
+                                                "externs/socket.io-client.js"
+                                                "externs/react-select.js"
+                                                "externs/react-input-autosize.js"
+                                                "externs/classnames.js"]}}}})

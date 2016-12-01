@@ -2,7 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
             [palr.components.common :refer [PalrBackground]]
-            [palr.components.ui :refer [ScrollDiv Avatar Icon Select Creatable Textarea EllipsisDropdown]]
+            [palr.components.ui :refer [ScrollDiv Avatar Icon Select Creatable Textarea EllipsisDropdown Dropzone]]
             [palr.util]
             [cljs-time.format :as ctf]
             [cljs-time.core :as ctc]
@@ -110,7 +110,8 @@
 (defn MessageBox [mine? messages]
   [ScrollDiv {:class "flex-auto overflow-scroll mb1 px1 flex flex-column"}
    (for [message messages]
-     ^{:key message} [:div.p1.m1.rounded {:class (if (mine? message) "self-start p-bg-green" "self-end bg-darken-1")}
+     ^{:key message} [:div.p1.m1.rounded {:class (if (mine? message) "self-start p-bg-green" "self-end bg-darken-1")
+                                          :style {:white-space "pre-line"}}
                       (:content message)])])
 
 (defn Conversation [convo messages]
@@ -158,7 +159,9 @@
         handle-submit (comp dispatch-update prevent-default)]
     (fn [session]
       [:form.p2.flex.flex-column.bg-darken-1.p-h-100 {:on-submit handle-submit}
-       [ProfileImage {:src @imageUrl :size "100px"}]
+       ;[Dropzone {:on-drop #(println "test")}
+        [ProfileImage {:src @imageUrl :size "100px"}]
+        ;]
        [:div.px2
         [:div
          [ProfileInputBox
@@ -243,15 +246,23 @@
              [:div.flex-auto
               (when @pal-profile-open?
                 [PalProfileSidebar (:pal convo)])]])
-          [:div.col.col-8.lg-col.lg-col-9 "Please pick a pal!"])]])))
+          [:div.col.col-8.lg-col.lg-col-9.p-h-100.flex.items-center.justify-center
+           [:div "Please pick a pal!"]])]])))
 
 (defn MatchMe []
-  [PalrContainer
-   [:div.flex.justify-center {:style {:width "100%" :height "100%"}}
-    [:div.flex.flex-column.justify-center {:style {:width "20rem"}}
-     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal-flow "LEARN"])} "Learn"]
-     [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal-flow "TALK"])} "Talk"]
-     [PalrButton {:on-click #(re-frame/dispatch [:request-pal-flow "LISTEN"])} "Listen"]]]])
+  (let [session (re-frame/subscribe [:session])]
+    (fn []
+      [PalrContainer
+       [:div.flex.clearfix {:style {:width "100%" :height "100%"}}
+        [:div.col.col-4
+         [:div.flex.flex-end.bg-darken-1.p-flex-row-reverse.py1
+          [EllipsisDropdown {:logout "Logout"} #(case % :logout (re-frame/dispatch [:logout]))]]
+         [ProfileSidebar @session]]
+        [:div.col.col-8.flex.flex-column.justify-center.items-center
+         [:div.flex.flex-column {:style {:width "20rem"}}
+          [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal-flow "LEARN"])} "Learn"]
+          [PalrButton {:class "mb1" :on-click #(re-frame/dispatch [:request-pal-flow "TALK"])} "Talk"]
+          [PalrButton {:on-click #(re-frame/dispatch [:request-pal-flow "LISTEN"])} "Listen"]]]]])))
 
 (defn progress-bar []
   (fn [props]
