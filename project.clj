@@ -71,7 +71,7 @@
                                                 :provides ["js.react-progress-bar-plus"]} ;; need to prefix with js.
                                                {:file "node_modules/alertify/lib/alertify.js"
                                                 :provides ["js.alertify"]}
-                                               {:file "node_modules/socket.io-client/socket.io.js"
+                                               {:file "node_modules/socket.io-client/dist/socket.io.js"
                                                 :provides ["js.socket.io-client"]}
                                                {:file "node_modules/classnames/index.js"
                                                 :provides ["js.classnames"]}
@@ -104,7 +104,7 @@
                                                 :provides ["js.react-progress-bar-plus"]} ;; need to prefix with js.
                                                {:file "node_modules/alertify/lib/alertify.js"
                                                 :provides ["js.alertify"]}
-                                               {:file "node_modules/socket.io-client/socket.io.js"
+                                               {:file "node_modules/socket.io-client/dist/socket.io.js"
                                                 :provides ["js.socket.io-client"]}
                                                {:file "node_modules/classnames/index.js"
                                                 :provides ["js.classnames"]}
